@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const emaivarifyTemplate = require("./emailverifyTemplate");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -15,10 +16,7 @@ const sendEmail = async ({ email, subject, otp }) => {
     from: `"E-commerce"`,
     to: email,
     subject,
-    html: `
-      <h1 email verification otp">${otp}</h1>
-    
-    `,
+    html: emaivarifyTemplate(otp),
   });
 };
 
