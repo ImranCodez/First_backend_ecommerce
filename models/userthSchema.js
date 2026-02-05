@@ -56,8 +56,9 @@ userAuthSchema.pre("save", async function (next) {
   }
 });
 
-// 🔑 Compare password method
+// 🔑 Compare password method.../
 userAuthSchema.methods.comparePassword = async function (enteredPassword) {
+  const user = this;
   return bcrypt.compare(enteredPassword, user.password);
 };
 

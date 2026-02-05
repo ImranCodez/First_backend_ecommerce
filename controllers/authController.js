@@ -2,7 +2,8 @@ const { isValidEmail } = require("../services/validation");
 const userSchema = require("../models/userthSchema");
 const sendEmail = require("../services/emailSender");
 const generateotp = require("../services/helpers");
-
+const generateToken = require("../services/token");
+// ...........signup part...//
 const signupuser = async (req, res) => {
   try {
     const { fullname, email, password, phone, address, role } = req.body;
@@ -43,30 +44,89 @@ const signupuser = async (req, res) => {
     res.status(500).send({ message: "Server error" });
   }
 };
- // .......otp verify......//
-  const verifyOtp = async (req, res) => {
+// .......otp verify......//
+const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body; 
+    const { email, otp } = req.body;
+
+    // 1️⃣ Validation
     if (!email) return res.status(400).send("email is required");
     if (!otp) return res.status(400).send("otp is required");
+
+    // 2️⃣ Find user
     const user = await userSchema.findOne({ email });
-     console.log(user);
     if (!user) return res.status(404).send("User not found");
 
-    res.send("OTP route working");
+    // 3️⃣ Check OTP match
+    if (user.otp !== otp) {
+      return res.status(400).send("Invalid OTP");
+    }
 
+    // 4️⃣ Check OTP expiry
+    if (user.otpExpires < Date.now()) {
+      return res.status(400).send("OTP expired");
+    }
+
+    // 5️⃣ Update user (verify)
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpires = null;
+
+    // 6️⃣ Save to DB
+    await user.save();
+
+    // 7️⃣ Success response
+    res.status(200).send({
+      message: "Email verified successfully",
+      isVerified: true,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server error");
   }
 };
-
-const singiuser = (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email) return res.status(400).send({ message: "email is required" });
-  if (!password)
-    return res.status(400).send({ message: "password is required" });
-  res.status(200).send({ message: "Login is sucessful" });
+// ........regenerate........//
+const regenerateOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).send("emai is required");
+    const user = await userSchema.findOne({ email, isVerified: false });
+    if (!user) return res.status(400).send("Invalid email");
+    const generateOTP = generateotp();
+    user.otp = generateOTP;
+    user.otpExpires = Date.now() * 2 * 60 * 1000;
+    sendEmail({ email, subject: "Email varification", otp: gnerateOTP });
+    res.status(201).send({ message: "otp send your email is succcessfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal server error");
+  }
 };
-module.exports = { signupuser, singiuser, verifyOtp };
+// ..signin part .....//
+const singiuser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email) return res.status(400).send({ message: "email is required" });
+    if (!password)
+      return res.status(400).send({ message: "password is required" });
+    const existingUser = await userSchema.findOne({ email });
+    if (!existingUser)
+      return res
+        .status(404)
+        .send({ messsage: "with this email user not   exist" });
+    const matchpass = await existingUser.comparePassword(password);
+    if (!matchpass) return res.status(400).send({ message: "wrong password" });
+    const token = generateToken({
+      userId: user._id,
+      email: user.email,
+    });
+
+    console.log(token);
+    res.status(200).send({ message: "Login is sucessful" });
+    sendResponse( 200,)
+  } catch (error) {
+    console.log(error);
+  }
+};
+module.exports = { signupuser, singiuser, verifyOtp, regenerateOtp };
