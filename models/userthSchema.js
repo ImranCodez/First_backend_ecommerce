@@ -55,7 +55,7 @@ userAuthSchema.pre("save", async function (next) {
     console.log(err)
   }
 });
-
+ 
 // 🔑 Compare password method.../
 userAuthSchema.methods.comparePassword = async function (enteredPassword) {
   const user = this;

@@ -2,7 +2,9 @@ const { isValidEmail } = require("../services/validation");
 const userSchema = require("../models/userthSchema");
 const sendEmail = require("../services/emailSender");
 const generateotp = require("../services/helpers");
-const generateToken = require("../services/token");
+const generateAccsToken = require("../services/token");
+const sendResponse = require("../services/responsiveHandler");
+
 // ...........signup part...//
 const signupuser = async (req, res) => {
   try {
@@ -117,14 +119,16 @@ const singiuser = async (req, res) => {
         .send({ messsage: "with this email user not   exist" });
     const matchpass = await existingUser.comparePassword(password);
     if (!matchpass) return res.status(400).send({ message: "wrong password" });
-    const token = generateToken({
-      userId: user._id,
-      email: user.email,
+    const token = generateAccsToken({
+      existingUser,
     });
+    const reftoken = generateAccsToken.generateRefToken(existingUser);
+    res.cookie("accessToken", token);
+    res.cookie("x-Xreftoken", reftoken);
 
     console.log(token);
+    console.log(reftoken);
     res.status(200).send({ message: "Login is sucessful" });
-    sendResponse( 200,)
   } catch (error) {
     console.log(error);
   }
