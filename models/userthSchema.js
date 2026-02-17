@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const sendResponse = require("../services/responsiveHandler");
 
 const userAuthSchema = new mongoose.Schema(
   {
@@ -50,16 +51,16 @@ userAuthSchema.pre("save", async function (next) {
 
   try {
     user.password = await bcrypt.hash(user.password, 10);
-    
   } catch (err) {
-    console.log(err)
+    sendResponse(res, 500, "Internal server error");
+    console.log(err);
   }
 });
- 
+
 // 🔑 Compare password method.../
 userAuthSchema.methods.comparePassword = async function (enteredPassword) {
   const user = this;
   return bcrypt.compare(enteredPassword, user.password);
 };
 
-module.exports = mongoose.model("User", userAuthSchema);
+module.exports = mongoose.model("user", userAuthSchema);

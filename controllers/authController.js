@@ -1,9 +1,10 @@
 const { isValidEmail } = require("../services/validation");
 const userSchema = require("../models/userthSchema");
-const sendEmail = require("../services/emailSender");
-const generateotp = require("../services/helpers");
-const generateAccsToken = require("../services/token");
+const { sendEmail } = require("../services/emailSender");
+const { generateAccsToken, generateRefToken, resetpassToken } = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
+const { resetpasstemplate, emailvarifyTemplate } = require("../services/emailverifyTemplate");
+const generateotp = require("../services/helpers");
 
 // ...........signup part...//
 const signupuser = async (req, res) => {
@@ -24,7 +25,7 @@ const signupuser = async (req, res) => {
       return res
         .status(400)
         .send({ message: "User already exists with this email" });
-    const gnerateOTP = generateotp();
+    const generateOTP = generateotp();
 
     const user = new userSchema({
       fullname,
@@ -33,11 +34,10 @@ const signupuser = async (req, res) => {
       phone,
       role,
       address,
-      otp: gnerateOTP,
+      otp: generateOTP,
       otpExpires: Date.now() + 2 * 60 * 1000,
     });
-    sendEmail({ email, subject: "Email varification", otp: gnerateOTP });
-
+    sendEmail({ email, subject:"Email varification",template:emailvarifyTemplate, otp:generateOTP });
     user.save();
     console.log("hea hocce vai");
     res.status(201).send({ message: "Registration successful" });
@@ -97,7 +97,7 @@ const regenerateOtp = async (req, res) => {
     const generateOTP = generateotp();
     user.otp = generateOTP;
     user.otpExpires = Date.now() * 2 * 60 * 1000;
-    sendEmail({ email, subject: "Email varification", otp: gnerateOTP });
+    sendEmail({ email, subject:"Email varification",template:emailvarifyTemplate, otp:generateOTP });
     res.status(201).send({ message: "otp send your email is succcessfully" });
   } catch (error) {
     console.log(error);
@@ -105,7 +105,7 @@ const regenerateOtp = async (req, res) => {
   }
 };
 // ..signin part .....//
-const singiuser = async (req, res) => {
+const singinuser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -119,18 +119,50 @@ const singiuser = async (req, res) => {
         .send({ messsage: "with this email user not   exist" });
     const matchpass = await existingUser.comparePassword(password);
     if (!matchpass) return res.status(400).send({ message: "wrong password" });
-    const token = generateAccsToken({
-      existingUser,
-    });
-    const reftoken = generateAccsToken.generateRefToken(existingUser);
-    res.cookie("accessToken", token);
-    res.cookie("x-Xreftoken", reftoken);
 
-    console.log(token);
-    console.log(reftoken);
+    if (!existingUser.isVerified)
+      return sendResponse(res, 400, "Email is not verified");
+
+    const token = generateAccsToken(existingUser);
+    const reftoken = generateRefToken(existingUser);
+    const cookieAcsOptions = {
+      httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
+      maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (e.g., 15 minutes)
+      secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
+      // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
+    };
+    const cookieRFcsOptions = {
+      httpOnly: false,
+      maxAge: 1296000000, // Cookie expiry time in milliseconds (e.g., 15 days)
+      secure: false,
+      // sameSite: 'Strict',
+    };
+
+    res.cookie("accessToken", token, cookieAcsOptions);
+    res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
+
     res.status(200).send({ message: "Login is sucessful" });
   } catch (error) {
     console.log(error);
   }
 };
-module.exports = { signupuser, singiuser, verifyOtp, regenerateOtp };
+// ........forgatepass............//
+const forgatepass = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return sendResponse(res, 400, "email is required");
+    if (!isValidEmail(email))
+      return sendResponse(res, 400, "enter a valid email adress");
+    const existingUser = await userSchema.findOne({ email });
+    if(!existingUser)return sendResponse(res,404,"with this email user not exist");
+      const reserpasstoken= resetpassToken(existingUser)
+
+    let ResetLink=`${process.env.CLIEN_URL||"http://localhost:8000/"}/resetpass/?${reserpasstoken}`;
+    sendEmail({ email, subject: "reset your password",otp:ResetLink,template:resetpasstemplate});
+    sendResponse(res,200,"find the reset passsword link in email",true)
+  } catch (error) {
+    sendResponse(res,400,"Internal server error")
+    console.log(error)
+  }
+};
+module.exports = { signupuser, singinuser, verifyOtp, regenerateOtp,forgatepass };

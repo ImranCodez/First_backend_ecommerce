@@ -1,5 +1,5 @@
 const sendResponse = (
-  res,
+    res, 
     statusCode = 200,
     success = true,
     message = 'Success',
