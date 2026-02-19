@@ -10,13 +10,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async ({ email, subject, otp,template }) => {
+const sendEmail = async ({ email, subject, otp, template }) => {
   await transporter.sendMail({
     from: `"E-commerce"`,
     to: email,
     subject,
-    html:template({otp}),
+    html: template(otp),
   });
 };
 
-module.exports = {sendEmail};
+module.exports = { sendEmail };

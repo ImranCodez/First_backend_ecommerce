@@ -96,7 +96,7 @@ const emailvarifyTemplate = (otp) => {
 </div>`;
 };
 // .........resetpassword template ..........//
-const resetpasstemplate = (ResetLink) => {
+const resetpasstemplate = (otp) => {
   return `<div style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, sans-serif;">
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4; padding:20px 0;">
@@ -126,7 +126,7 @@ const resetpasstemplate = (ResetLink) => {
               <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:30px auto;">
                 <tr>
                   <td align="center" style="background-color:#4F46E5; border-radius:5px;">
-                    <a href="/${ResetLink}" target="_blank"
+                    <a href="${otp}" target="_blank"
                        style="display:inline-block; padding:12px 24px; font-size:16px; color:#ffffff; text-decoration:none; border-radius:5px;">
                       Reset Password
                     </a>

@@ -1,9 +1,16 @@
 const { isValidEmail } = require("../services/validation");
 const userSchema = require("../models/userthSchema");
 const { sendEmail } = require("../services/emailSender");
-const { generateAccsToken, generateRefToken, resetpassToken } = require("../services/token");
+const {
+  generateAccsToken,
+  generateRefToken,
+  resetpassToken,
+} = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
-const { resetpasstemplate, emailvarifyTemplate } = require("../services/emailverifyTemplate");
+const {
+  resetpasstemplate,
+  emailvarifyTemplate,
+} = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
 
 // ...........signup part...//
@@ -37,7 +44,12 @@ const signupuser = async (req, res) => {
       otp: generateOTP,
       otpExpires: Date.now() + 2 * 60 * 1000,
     });
-    sendEmail({ email, subject:"Email varification",template:emailvarifyTemplate, otp:generateOTP });
+    sendEmail({
+      email,
+      subject: "Email varification",
+      template: emailvarifyTemplate,
+      otp: generateOTP,
+    });
     user.save();
     console.log("hea hocce vai");
     res.status(201).send({ message: "Registration successful" });
@@ -97,7 +109,12 @@ const regenerateOtp = async (req, res) => {
     const generateOTP = generateotp();
     user.otp = generateOTP;
     user.otpExpires = Date.now() * 2 * 60 * 1000;
-    sendEmail({ email, subject:"Email varification",template:emailvarifyTemplate, otp:generateOTP });
+    sendEmail({
+      email,
+      subject: "Email varification",
+      template: emailvarifyTemplate,
+      otp: generateOTP,
+    });
     res.status(201).send({ message: "otp send your email is succcessfully" });
   } catch (error) {
     console.log(error);
@@ -154,15 +171,43 @@ const forgatepass = async (req, res) => {
     if (!isValidEmail(email))
       return sendResponse(res, 400, "enter a valid email adress");
     const existingUser = await userSchema.findOne({ email });
-    if(!existingUser)return sendResponse(res,404,"with this email user not exist");
-      const reserpasstoken= resetpassToken(existingUser)
+    if (!existingUser)
+      return sendResponse(res, 404, "with this email user not exist");
+    const reserpasstoken = resetpassToken(existingUser);
 
-    let ResetLink=`${process.env.CLIEN_URL||"http://localhost:8000/"}/resetpass/?${reserpasstoken}`;
-    sendEmail({ email, subject: "reset your password",otp:ResetLink,template:resetpasstemplate});
-    sendResponse(res,200,"find the reset passsword link in email",true)
+    existingUser.resetPasstken = reserpasstoken;
+    existingUser.resetExpire = Date.now() + 2 * 60 * 1000;
+    existingUser.save();
+    console.log(reserpasstoken);
+    let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${reserpasstoken}`;
+    sendEmail({
+      email,
+      subject: "reset your password",
+      otp: ResetLink,
+      template: resetpasstemplate,
+    });
+    sendResponse(res, 200, "find the reset passsword link in email", true);
   } catch (error) {
-    sendResponse(res,400,"Internal server error")
+    sendResponse(res, 400, "Internal server error");
+    console.log(error);
+  }
+};
+const resetpassword = async (req, res) => {
+  try {
+    const { newpass } = req.body;
+  const { token } = req.params;
+  if(!newpass) return sendResponse(res,400,"New password is required");
+  if (!token) return sendResponse(res, 400, "Invalid Requist");
+  console.log(newpass,token);
+  } catch (error) {
     console.log(error)
   }
 };
-module.exports = { signupuser, singinuser, verifyOtp, regenerateOtp,forgatepass };
+module.exports = {
+  signupuser,
+  singinuser,
+  verifyOtp,
+  regenerateOtp,
+  forgatepass,
+  resetpassword,
+};

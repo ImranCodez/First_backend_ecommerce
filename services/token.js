@@ -3,7 +3,7 @@ const sendResponse = require("./responsiveHandler");
 
 const generateAccsToken = (user) => {
   return jwt.sign(
-    {   
+    {
       id: user._id,
       email: user.email,
       role: user.role,
@@ -25,15 +25,11 @@ const generateRefToken = (user) => {
   );
 };
 const resetpassToken = (user) => {
-  return jwt.sign(
-    {
-      user: user._id,
-      email: user.email,
-    },
+  return Buffer.from(`jbkjfbkjbd:imranhosain@gamil.com`).toString("base64");
+};
 
-    process.env.JWT_SECRET,
-    { expiresIn: "2h" },
-  );
+const verifyresetpass = (token) => {
+  return Buffer.from(tkn, "base64").toString("utf-8").split(":");
 };
 // .......verufytoken.....//
 const verifyToken = (token) => {
@@ -47,4 +43,10 @@ const verifyToken = (token) => {
   }
 };
 
-module.exports = { generateAccsToken, generateRefToken, resetpassToken,verifyToken };
+module.exports = {
+  generateAccsToken,
+  generateRefToken,
+  resetpassToken,
+  verifyToken,
+  verifyresetpass,
+};
