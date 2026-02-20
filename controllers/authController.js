@@ -5,9 +5,11 @@ const {
   generateAccsToken,
   generateRefToken,
   resetpassToken,
+  verifyresetpass,
 } = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
 const {
+ 
   resetpasstemplate,
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
@@ -173,12 +175,12 @@ const forgatepass = async (req, res) => {
     const existingUser = await userSchema.findOne({ email });
     if (!existingUser)
       return sendResponse(res, 404, "with this email user not exist");
-    const reserpasstoken = resetpassToken(existingUser);
+    const reserpasstoken = resetpassToken({id:existingUser._id,email:existingUser.email});
 
     existingUser.resetPasstken = reserpasstoken;
     existingUser.resetExpire = Date.now() + 2 * 60 * 1000;
     existingUser.save();
-    console.log(reserpasstoken);
+
     let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${reserpasstoken}`;
     sendEmail({
       email,
@@ -196,10 +198,14 @@ const resetpassword = async (req, res) => {
   try {
     const { newpass } = req.body;
   const { token } = req.params;
+  console.log(token)
   if(!newpass) return sendResponse(res,400,"New password is required");
   if (!token) return sendResponse(res, 400, "Invalid Requist");
-  console.log(newpass,token);
+      const decoded=verifyresetpass(token)
+      sendResponse(res,200,"reset password is successful")
+      console.log(decoded)
   } catch (error) {
+    sendResponse(res,500,"Internal server error")
     console.log(error)
   }
 };

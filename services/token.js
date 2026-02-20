@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const sendResponse = require("./responsiveHandler");
+const { json } = require("express");
 
 const generateAccsToken = (user) => {
   return jwt.sign(
@@ -25,11 +26,11 @@ const generateRefToken = (user) => {
   );
 };
 const resetpassToken = (user) => {
-  return Buffer.from(`jbkjfbkjbd:imranhosain@gamil.com`).toString("base64");
+  return Buffer.from(`${JSON.stringify(user)}`).toString("base64");
 };
 
 const verifyresetpass = (token) => {
-  return Buffer.from(tkn, "base64").toString("utf-8").split(":");
+  return JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
 };
 // .......verufytoken.....//
 const verifyToken = (token) => {
@@ -42,6 +43,7 @@ const verifyToken = (token) => {
     return null;
   }
 };
+
 
 module.exports = {
   generateAccsToken,

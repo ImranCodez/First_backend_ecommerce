@@ -8,6 +8,6 @@ route.post("/verifyOtp",verifyOtp);
 route.post("/regenerateotp",regenerateOtp);
 route.post("/signin",singinuser);
 route.post("/forgetepass",forgatepass);
-route.post("/resetpass/:token",resetpassword)
+route.get("/resetpass/:token",resetpassword)
 
 module.exports = route;
