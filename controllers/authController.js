@@ -196,14 +196,13 @@ const forgatepass = async (req, res) => {
 };
 const resetpassword = async (req, res) => {
   try {
-    const { newpass } = req.body;
-  const { token } = req.params;
-  console.log(token)
+    const { newpass } = req?.body;
+     const { token } = req.params;
   if(!newpass) return sendResponse(res,400,"New password is required");
-  if (!token) return sendResponse(res, 400, "Invalid Requist");
-      const decoded=verifyresetpass(token)
-      sendResponse(res,200,"reset password is successful")
-      console.log(decoded)
+  if (!token) return sendResponse(res, 400, "page is not found");
+      const {id,email}=verifyresetpass(token)
+    console.log(id,email)
+      sendResponse(res,200,"reset password is successful",true)
   } catch (error) {
     sendResponse(res,500,"Internal server error")
     console.log(error)
