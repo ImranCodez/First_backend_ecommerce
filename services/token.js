@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const sendResponse = require("./responsiveHandler");
 const { json } = require("express");
 
@@ -25,8 +26,9 @@ const generateRefToken = (user) => {
     { expiresIn: "15d" },
   );
 };
-const resetpassToken = (user) => {
-  return Buffer.from(`${JSON.stringify(user)}`).toString("base64");
+const resetpassToken = () => {
+  return resetToken = crypto.randomBytes(16).toString("hex");
+  // return Buffer.from(`${JSON.stringify(kisu_aktadeo)}`).toString("base64");
 };
 
 const verifyresetpass = (token) => {
@@ -43,7 +45,6 @@ const verifyToken = (token) => {
     return null;
   }
 };
-
 
 module.exports = {
   generateAccsToken,

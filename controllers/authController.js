@@ -166,22 +166,20 @@ const singinuser = async (req, res) => {
   }
 };
 // ........forgatepass............//
-const forgatepass = async (req, res) => {
+const forgatepass = async(req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return sendResponse(res, 400, "email is required");
-    if (!isValidEmail(email))
-      return sendResponse(res, 400, "enter a valid email adress");
-    const existingUser = await userSchema.findOne({ email });
-    if (!existingUser)
-      return sendResponse(res, 404, "with this email user not exist");
-    const reserpasstoken = resetpassToken({id:existingUser._id,email:existingUser.email});
+    const user = await userSchema.findOne({ email: req.body.email }).select("_id email");
+    if (!user) {
+      return sendResponse(res,404,"with this email user not exist");
+    };
+    console.log(user)
+    const resetpasstken = resetpassToken();
+    console.log("crptotokenr",resetpassToken)
+    user.resetPasstken = resetpasstken;
+    user.resetExpire = Date.now() + 15 * 60 * 1000;
+    user.save();
 
-    existingUser.resetPasstken = reserpasstoken;
-    existingUser.resetExpire = Date.now() + 2 * 60 * 1000;
-    existingUser.save();
-
-    let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${reserpasstoken}`;
+    let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${resetpasstken}`;
     sendEmail({
       email,
       subject: "reset your password",
@@ -196,7 +194,7 @@ const forgatepass = async (req, res) => {
 };
 const resetpassword = async (req, res) => {
   try {
-    const { newpass } = req?.body;
+    const { newpass } = req.body;
      const { token } = req.params;
   if(!newpass) return sendResponse(res,400,"New password is required");
   if (!token) return sendResponse(res, 400, "page is not found");
