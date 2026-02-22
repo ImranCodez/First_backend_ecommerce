@@ -9,7 +9,6 @@ const {
 } = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
 const {
- 
   resetpasstemplate,
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
@@ -166,22 +165,24 @@ const singinuser = async (req, res) => {
   }
 };
 // ........forgatepass............//
-const forgatepass = async(req, res) => {
+const forgatepass = async (req, res) => {
   try {
-    const user = await userSchema.findOne({ email: req.body.email }).select("_id email");
+    const user = await userSchema
+      .findOne({ email: req.body.email })
+      .select("_id email");
     if (!user) {
-      return sendResponse(res,404,"with this email user not exist");
-    };
-    console.log(user)
-    const resetpasstken = resetpassToken();
-    console.log("crptotokenr",resetpassToken)
-    user.resetPasstken = resetpasstken;
+      return sendResponse(res, 404, "with this email user not exist");
+    }
+    console.log(user);
+    const {resetPasswordToken,resetToken} = resetpassToken();
+    console.log(resetPasswordToken,resetToken); 
+    user.resetPasstken = resetPasswordToken;
     user.resetExpire = Date.now() + 15 * 60 * 1000;
     user.save();
 
-    let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${resetpasstken}`;
+    let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${resetToken}`;
     sendEmail({
-      email,
+      email:user.email,
       subject: "reset your password",
       otp: ResetLink,
       template: resetpasstemplate,
@@ -195,15 +196,15 @@ const forgatepass = async(req, res) => {
 const resetpassword = async (req, res) => {
   try {
     const { newpass } = req.body;
-     const { token } = req.params;
-  if(!newpass) return sendResponse(res,400,"New password is required");
-  if (!token) return sendResponse(res, 400, "page is not found");
-      const {id,email}=verifyresetpass(token)
-    console.log(id,email)
-      sendResponse(res,200,"reset password is successful",true)
+    const { token } = req.params;
+    if (!newpass) return sendResponse(res, 400, "New password is required");
+    if (!token) return sendResponse(res, 400, "page is not found");
+    const { id, email } = verifyresetpass(token);
+    console.log(id, email);
+    sendResponse(res, 200, "reset password is successful", true);
   } catch (error) {
-    sendResponse(res,500,"Internal server error")
-    console.log(error)
+    sendResponse(res, 500, "Internal server error");
+    console.log(error);
   }
 };
 module.exports = {
