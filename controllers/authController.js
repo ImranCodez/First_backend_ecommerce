@@ -6,6 +6,7 @@ const {
   generateRefToken,
   resetpassToken,
   verifyresetpass,
+  hashverifytoken,
 } = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
 const {
@@ -174,15 +175,15 @@ const forgatepass = async (req, res) => {
       return sendResponse(res, 404, "with this email user not exist");
     }
     console.log(user);
-    const {resetPasswordToken,resetToken} = resetpassToken();
-    console.log(resetPasswordToken,resetToken); 
+    const { resetPasswordToken, resetToken } = resetpassToken();
+    console.log(resetPasswordToken, resetToken);
     user.resetPasstken = resetPasswordToken;
     user.resetExpire = Date.now() + 15 * 60 * 1000;
     user.save();
 
     let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${resetToken}`;
     sendEmail({
-      email:user.email,
+      email: user.email,
       subject: "reset your password",
       otp: ResetLink,
       template: resetpasstemplate,
@@ -199,8 +200,14 @@ const resetpassword = async (req, res) => {
     const { token } = req.params;
     if (!newpass) return sendResponse(res, 400, "New password is required");
     if (!token) return sendResponse(res, 400, "page is not found");
-    const { id, email } = verifyresetpass(token);
-    console.log(id, email);
+    const verfyhashtoken = hashverifytoken(token);
+    const dbuser = await userSchema.findOne({
+      resetPasstken: verfyhashtoken,
+      resetExpire: { $gt: Date.now() },
+    });
+    console.log("myuser", dbuser);
+    if (!dbuser) return sendResponse(res, 400, "Invalid request");
+    console.log("resetokenfrom", verfyhashtoken);
     sendResponse(res, 200, "reset password is successful", true);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");

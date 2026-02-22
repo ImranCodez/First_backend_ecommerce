@@ -36,8 +36,10 @@ const resetpassToken = () => {
   // return Buffer.from(`${JSON.stringify(kisu_aktadeo)}`).toString("base64");
 };
 
-const verifyresetpass = (token) => {
-  return JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
+const hashverifytoken = (token) => {
+ const hasverify= crypto.createHash("sha256").update(token).digest("hex");
+ return hasverify;
+  // return JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
 };
 // .......verufytoken.....//
 const verifyToken = (token) => {
@@ -56,5 +58,5 @@ module.exports = {
   generateRefToken,
   resetpassToken,
   verifyToken,
-  verifyresetpass,
+  hashverifytoken,
 };
