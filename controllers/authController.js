@@ -5,7 +5,6 @@ const {
   generateAccsToken,
   generateRefToken,
   resetpassToken,
-  verifyresetpass,
   hashverifytoken,
 } = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
@@ -19,23 +18,17 @@ const generateotp = require("../services/helpers");
 const signupuser = async (req, res) => {
   try {
     const { fullname, email, password, phone, address, role } = req.body;
-
-    if (!fullname)
-      return res.status(400).send({ message: "Fullname is required" });
-    if (!email) return res.status(400).send({ message: "Email is required" });
+    if (!fullname) return sendResponse(res, 400, "fullname is required");
+    if (!email) return sendResponse(res, 400, "emai is required");
     if (!isValidEmail(email))
-      return res.status(400).send({ message: "Invalid email" });
-    if (!password)
-      return res.status(400).send({ message: "Password is required" });
+      return sendResponse(res, 400, " emai is not valid");
+    if (!password) return sendResponse(res, 400, "password is required");
     const existingUser = await userSchema.findOne({
-      email: email.toLowerCase(),
+      email:email.toLowerCase(),
     });
     if (existingUser)
-      return res
-        .status(400)
-        .send({ message: "User already exists with this email" });
+      return sendResponse(res, 400, "User already exists with this email");
     const generateOTP = generateotp();
-
     const user = new userSchema({
       fullname,
       email: email.toLowerCase(),
@@ -53,13 +46,53 @@ const signupuser = async (req, res) => {
       otp: generateOTP,
     });
     user.save();
-    console.log("hea hocce vai");
-    res.status(201).send({ message: "Registration successful" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Server error" });
-  }
-};
+     sendResponse(res, 201,"signup is successfull");
+    } catch (error) {
+      sendResponse(res, 500,"Internal server error");
+    }
+  };
+  // ..signin part .....//
+  const singinuser = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      if (!email) return res.status(400).send({ message: "email is required" });
+      if (!password)
+        return res.status(400).send({ message: "password is required" });
+      const existingUser = await userSchema.findOne({ email });
+      if (!existingUser)
+        return res
+          .status(404)
+          .send({ messsage: "with this email user not   exist" });
+      const matchpass = await existingUser.comparePassword(password);
+      if (!matchpass) return res.status(400).send({ message: "wrong password" });
+  
+      if (!existingUser.isVerified)
+        return sendResponse(res, 400, "Email is not verified");
+  
+      const token = generateAccsToken(existingUser);
+      const reftoken = generateRefToken(existingUser);
+      const cookieAcsOptions = {
+        httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
+        maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (e.g., 15 minutes)
+        secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
+        // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
+      };
+      const cookieRFcsOptions = {
+        httpOnly: false,
+        maxAge: 1296000000, // Cookie expiry time in milliseconds (e.g., 15 days)
+        secure: false,
+        // sameSite: 'Strict',
+      };
+  
+      res.cookie("accessToken", token, cookieAcsOptions);
+      res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
+  
+      res.status(200).send({ message: "Login is sucessful" });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 // .......otp verify......//
 const verifyOtp = async (req, res) => {
   try {
@@ -78,7 +111,7 @@ const verifyOtp = async (req, res) => {
       return res.status(400).send("Invalid OTP");
     }
 
-    // 4️⃣ Check OTP expiry
+    // 4️⃣ Check OTP expiry 
     if (user.otpExpires < Date.now()) {
       return res.status(400).send("OTP expired");
     }
@@ -91,7 +124,6 @@ const verifyOtp = async (req, res) => {
     // 6️⃣ Save to DB
     await user.save();
 
-    // 7️⃣ Success response
     res.status(200).send({
       message: "Email verified successfully",
       isVerified: true,
@@ -105,7 +137,7 @@ const verifyOtp = async (req, res) => {
 const regenerateOtp = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).send("emai is required");
+    if (!email) return sendResponse(res,400,"email is required");
     const user = await userSchema.findOne({ email, isVerified: false });
     if (!user) return res.status(400).send("Invalid email");
     const generateOTP = generateotp();
@@ -123,48 +155,6 @@ const regenerateOtp = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
-// ..signin part .....//
-const singinuser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email) return res.status(400).send({ message: "email is required" });
-    if (!password)
-      return res.status(400).send({ message: "password is required" });
-    const existingUser = await userSchema.findOne({ email });
-    if (!existingUser)
-      return res
-        .status(404)
-        .send({ messsage: "with this email user not   exist" });
-    const matchpass = await existingUser.comparePassword(password);
-    if (!matchpass) return res.status(400).send({ message: "wrong password" });
-
-    if (!existingUser.isVerified)
-      return sendResponse(res, 400, "Email is not verified");
-
-    const token = generateAccsToken(existingUser);
-    const reftoken = generateRefToken(existingUser);
-    const cookieAcsOptions = {
-      httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
-      maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (e.g., 15 minutes)
-      secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
-      // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
-    };
-    const cookieRFcsOptions = {
-      httpOnly: false,
-      maxAge: 1296000000, // Cookie expiry time in milliseconds (e.g., 15 days)
-      secure: false,
-      // sameSite: 'Strict',
-    };
-
-    res.cookie("accessToken", token, cookieAcsOptions);
-    res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
-
-    res.status(200).send({ message: "Login is sucessful" });
-  } catch (error) {
-    console.log(error);
-  }
-};
 // ........forgatepass............//
 const forgatepass = async (req, res) => {
   try {
@@ -174,13 +164,10 @@ const forgatepass = async (req, res) => {
     if (!user) {
       return sendResponse(res, 404, "with this email user not exist");
     }
-    console.log(user);
     const { resetPasswordToken, resetToken } = resetpassToken();
-    console.log(resetPasswordToken, resetToken);
     user.resetPasstken = resetPasswordToken;
     user.resetExpire = Date.now() + 15 * 60 * 1000;
     user.save();
-
     let ResetLink = `${"http://localhost:8000/"}auth/resetpass/${resetToken}`;
     sendEmail({
       email: user.email,
@@ -191,7 +178,6 @@ const forgatepass = async (req, res) => {
     sendResponse(res, 200, "find the reset passsword link in email", true);
   } catch (error) {
     sendResponse(res, 400, "Internal server error");
-    console.log(error);
   }
 };
 const resetpassword = async (req, res) => {
@@ -205,10 +191,12 @@ const resetpassword = async (req, res) => {
       resetPasstken: verfyhashtoken,
       resetExpire: { $gt: Date.now() },
     });
-    console.log("myuser", dbuser);
     if (!dbuser) return sendResponse(res, 400, "Invalid request");
-    console.log("resetokenfrom", verfyhashtoken);
-    sendResponse(res, 200, "reset password is successful", true);
+    dbuser.password = newpass;
+    dbuser.resetPasstken = undefined;
+    dbuser.resetExpire = undefined;
+    dbuser.save();
+    sendResponse(res, 200, "password updated successfull", true);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
     console.log(error);
