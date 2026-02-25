@@ -24,7 +24,7 @@ const signupuser = async (req, res) => {
       return sendResponse(res, 400, " emai is not valid");
     if (!password) return sendResponse(res, 400, "password is required");
     const existingUser = await userSchema.findOne({
-      email:email.toLowerCase(),
+      email: email.toLowerCase(),
     });
     if (existingUser)
       return sendResponse(res, 400, "User already exists with this email");
@@ -46,53 +46,53 @@ const signupuser = async (req, res) => {
       otp: generateOTP,
     });
     user.save();
-     sendResponse(res, 201,"signup is successfull");
-    } catch (error) {
-      sendResponse(res, 500,"Internal server error");
-    }
-  };
-  // ..signin part .....//
-  const singinuser = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      if (!email) return res.status(400).send({ message: "email is required" });
-      if (!password)
-        return res.status(400).send({ message: "password is required" });
-      const existingUser = await userSchema.findOne({ email });
-      if (!existingUser)
-        return res
-          .status(404)
-          .send({ messsage: "with this email user not   exist" });
-      const matchpass = await existingUser.comparePassword(password);
-      if (!matchpass) return res.status(400).send({ message: "wrong password" });
-  
-      if (!existingUser.isVerified)
-        return sendResponse(res, 400, "Email is not verified");
-  
-      const token = generateAccsToken(existingUser);
-      const reftoken = generateRefToken(existingUser);
-      const cookieAcsOptions = {
-        httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
-        maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (e.g., 15 minutes)
-        secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
-        // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
-      };
-      const cookieRFcsOptions = {
-        httpOnly: false,
-        maxAge: 1296000000, // Cookie expiry time in milliseconds (e.g., 15 days)
-        secure: false,
-        // sameSite: 'Strict',
-      };
-  
-      res.cookie("accessToken", token, cookieAcsOptions);
-      res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
-  
-      res.status(200).send({ message: "Login is sucessful" });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    sendResponse(res, 201, "signup is successfull");
+  } catch (error) {
+    sendResponse(res, 500, "Internal server error");
+  }
+};
+// ..signin part .....//
+const singinuser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email) return res.status(400).send({ message: "email is required" });
+    if (!password)
+      return res.status(400).send({ message: "password is required" });
+    const existingUser = await userSchema.findOne({ email });
+    if (!existingUser)
+      return res
+        .status(404)
+        .send({ messsage: "with this email user not   exist" });
+    const matchpass = await existingUser.comparePassword(password);
+    if (!matchpass) return res.status(400).send({ message: "wrong password" });
+
+    if (!existingUser.isVerified)
+      return sendResponse(res, 400, "Email is not verified");
+
+    const token = generateAccsToken(existingUser);
+    const reftoken = generateRefToken(existingUser);
+    const cookieAcsOptions = {
+      httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
+      maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (e.g., 15 minutes)
+      secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
+      // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
+    };
+    const cookieRFcsOptions = {
+      httpOnly: false,
+      maxAge: 1296000000, // Cookie expiry time in milliseconds (e.g., 15 days)
+      secure: false,
+      // sameSite: 'Strict',
+    };
+
+    res.cookie("accessToken", token, cookieAcsOptions);
+    res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
+
+    res.status(200).send({ message: "Login is sucessful" });
+  } catch (error) {
+    console.log(error);
+  }
+};
 // .......otp verify......//
 const verifyOtp = async (req, res) => {
   try {
@@ -111,7 +111,7 @@ const verifyOtp = async (req, res) => {
       return res.status(400).send("Invalid OTP");
     }
 
-    // 4️⃣ Check OTP expiry 
+    // 4️⃣ Check OTP expiry
     if (user.otpExpires < Date.now()) {
       return res.status(400).send("OTP expired");
     }
@@ -137,7 +137,7 @@ const verifyOtp = async (req, res) => {
 const regenerateOtp = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return sendResponse(res,400,"email is required");
+    if (!email) return sendResponse(res, 400, "email is required");
     const user = await userSchema.findOne({ email, isVerified: false });
     if (!user) return res.status(400).send("Invalid email");
     const generateOTP = generateotp();
@@ -202,6 +202,12 @@ const resetpassword = async (req, res) => {
     console.log(error);
   }
 };
+const getprofile = async (req, rs) => {
+  const { phone, name } = req.body;
+  console.log(phone, name);
+
+  sendResponse(res, 200, "hea hocce", true);
+};
 module.exports = {
   signupuser,
   singinuser,
@@ -209,4 +215,5 @@ module.exports = {
   regenerateOtp,
   forgatepass,
   resetpassword,
+  getprofile,
 };

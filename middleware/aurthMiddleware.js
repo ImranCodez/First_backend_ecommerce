@@ -9,8 +9,9 @@ const authMiddleware = (req, res, next) => {
     console.log(decoded);
     req.user = decoded;
     next();
-    } catch (error) {
-           return sendResponse(res, 400, "Invalid request");    console.log(error);
+  } catch (error) {
+    return sendResponse(res, 400, "Invalid request");
+    console.log(error);
   }
 };
 
