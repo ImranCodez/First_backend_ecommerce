@@ -13,15 +13,15 @@ const {
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
-
 // ...........signup part...//
 const signupuser = async (req, res) => {
+    
   try {
     const { fullname, email, password, phone, address, role } = req.body;
     if (!fullname) return sendResponse(res, 400, "fullname is required");
-    if (!email) return sendResponse(res, 400, "emai is required");
+    if (!email) return sendResponse(res, 400, "email is required");
     if (!isValidEmail(email))
-      return sendResponse(res, 400, " emai is not valid");
+      return sendResponse(res, 400, " email is not valid");
     if (!password) return sendResponse(res, 400, "password is required");
     const existingUser = await userSchema.findOne({
       email: email.toLowerCase(),
@@ -49,6 +49,7 @@ const signupuser = async (req, res) => {
     sendResponse(res, 201, "signup is successfull");
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
+    console.log(error)
   }
 };
 // ..signin part .....//
@@ -66,10 +67,7 @@ const singinuser = async (req, res) => {
         .send({ messsage: "with this email user not   exist" });
     const matchpass = await existingUser.comparePassword(password);
     if (!matchpass) return res.status(400).send({ message: "wrong password" });
-
-    if (!existingUser.isVerified)
-      return sendResponse(res, 400, "Email is not verified");
-
+    if (!existingUser.isVerified)return sendResponse(res, 400, "Email is not verified");
     const token = generateAccsToken(existingUser);
     const reftoken = generateRefToken(existingUser);
     const cookieAcsOptions = {
