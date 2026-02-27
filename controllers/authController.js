@@ -67,7 +67,7 @@ const singinuser = async (req, res) => {
         .send({ messsage: "with this email user not   exist" });
     const matchpass = await existingUser.comparePassword(password);
     if (!matchpass) return res.status(400).send({ message: "wrong password" });
-    if (!existingUser.isVerified)return sendResponse(res, 400, "Email is not verified");
+    // if (!existingUser.isVerified)return sendResponse(res, 400, "Email is not verified");
     const token = generateAccsToken(existingUser);
     const reftoken = generateRefToken(existingUser);
     const cookieAcsOptions = {
@@ -86,7 +86,7 @@ const singinuser = async (req, res) => {
     res.cookie("accessToken", token, cookieAcsOptions);
     res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
 
-    res.status(200).send({ message: "Login is sucessful" });
+   sendResponse(res,200,"Login is succesfull",true);
   } catch (error) {
     console.log(error);
   }

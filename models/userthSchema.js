@@ -31,7 +31,7 @@ const userAuthSchema = new mongoose.Schema(
     },
     isVerified: {
       type: Boolean,
-      default: false,
+      default:false,
     },
     otp: {
       type: String,
