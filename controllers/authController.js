@@ -15,7 +15,6 @@ const {
 const generateotp = require("../services/helpers");
 // ...........signup part...//
 const signupuser = async (req, res) => {
-    
   try {
     const { fullname, email, password, phone, address, role } = req.body;
     if (!fullname) return sendResponse(res, 400, "fullname is required");
@@ -200,11 +199,15 @@ const resetpassword = async (req, res) => {
     console.log(error);
   }
 };
-const getprofile = async (req, rs) => {
-  const { phone, name } = req.body;
-  console.log(phone, name);
-
-  sendResponse(res, 200, "hea hocce", true);
+const getprofile = async (req, res) => {
+  try {
+    const user= await userSchema.findById(req.user.id).select("-otp -updatedAt -otpExpires");
+  if(!user) return sendResponse(res,400,"Inavlid request")
+ 
+  sendResponse(res, 200, "", true,user);
+  } catch (error) {
+    sendResponse(res,500,"Internal server error")
+  }
 };
 module.exports = {
   signupuser,
