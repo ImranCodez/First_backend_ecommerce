@@ -10,7 +10,6 @@ app.use(express.json());
 app.use(cors());
 dbconfig();
 app.use(route);
-
 // Buffer concept
 
 //  const tkn = Buffer.from(`jbkjfbkjbd:imranhosain@gamil.com`).toString("base64")

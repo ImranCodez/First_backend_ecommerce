@@ -48,7 +48,7 @@ const signupuser = async (req, res) => {
     sendResponse(res, 201, "signup is successfull");
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
-    console.log(error)
+    console.log(error);
   }
 };
 // ..signin part .....//
@@ -66,7 +66,8 @@ const singinuser = async (req, res) => {
         .send({ messsage: "with this email user not   exist" });
     const matchpass = await existingUser.comparePassword(password);
     if (!matchpass) return res.status(400).send({ message: "wrong password" });
-    // if (!existingUser.isVerified)return sendResponse(res, 400, "Email is not verified");
+    if (!existingUser.isVerified)
+      return sendResponse(res, 400, "Email is not verified");
     const token = generateAccsToken(existingUser);
     const reftoken = generateRefToken(existingUser);
     const cookieAcsOptions = {
@@ -85,7 +86,7 @@ const singinuser = async (req, res) => {
     res.cookie("accessToken", token, cookieAcsOptions);
     res.cookie("x-Xreftoken", reftoken, cookieRFcsOptions);
 
-   sendResponse(res,200,"Login is succesfull",true);
+    sendResponse(res, 200, "Login is succesfull", true);
   } catch (error) {
     console.log(error);
   }
@@ -201,14 +202,30 @@ const resetpassword = async (req, res) => {
 };
 const getprofile = async (req, res) => {
   try {
-    const user= await userSchema.findById(req.user.id).select("-otp -updatedAt -otpExpires");
-  if(!user) return sendResponse(res,400,"Inavlid request")
- 
-  sendResponse(res, 200, "", true,user);
+    const user = await userSchema
+      .findById(req.user.id)
+      .select("-otp -updatedAt -otpExpires");
+    if (!user) return sendResponse(res, 400, "Inavlid request");
+
+    sendResponse(res, 200, "", true, user);
   } catch (error) {
-    sendResponse(res,500,"Internal server error")
+    sendResponse(res, 500, "Internal server error");
   }
 };
+
+const UpdateProfile = async (req, res) => {
+try {
+    const { fullname, address, phone, avatar } = req.body;
+   const UserId = req.user.id;
+    const user = await userSchema.findByIdAndUpdate(UserId,{fullname,address,phone,avatar}).select("fullname address phone avatar -_id")
+  console.log("udaste",user);
+  sendResponse(res,201,"",user)
+} catch (error) {
+  sendResponse(res,500,"Inernal server error")
+  console.log(error)
+}
+};
+
 module.exports = {
   signupuser,
   singinuser,
@@ -217,4 +234,5 @@ module.exports = {
   forgatepass,
   resetpassword,
   getprofile,
+  UpdateProfile,
 };

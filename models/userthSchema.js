@@ -4,6 +4,9 @@ const sendResponse = require("../services/responsiveHandler");
 
 const userAuthSchema = new mongoose.Schema(
   {
+    avatar:{
+      type:String,
+    },
     fullname: {
       type: String,
       trim: true,
