@@ -72,7 +72,7 @@ const singinuser = async (req, res) => {
     const reftoken = generateRefToken(existingUser);
     const cookieAcsOptions = {
       httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
-      maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (e.g., 15 minutes)
+      maxAge: 1000 * 60 * 40, // Cookie expiry time in milliseconds (e.g., 15 minutes)
       secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
       // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
     };
@@ -216,8 +216,16 @@ const getprofile = async (req, res) => {
 const UpdateProfile = async (req, res) => {
   try {
     const { fullname, address, phone, avatar } = req.body;
+
     const UserId = req.user.id;
+
     const updatefield = {};
+
+    console.log("avatar=>", req.file);
+    // const base64ImageString = Buffer.from(req.file.buffer).toString('base64');
+    // const dataUri = `data:${req.file.mimeType};base64,${base64ImageString}`;
+    // sendResponse(res,200,"",dataUri)
+
     if (fullname) updatefield.fullname = fullname;
     if (address) updatefield.address = address;
     if (avatar) updatefield.avatar = avatar;
@@ -227,7 +235,7 @@ const UpdateProfile = async (req, res) => {
       .select("fullname address phone avatar -_id");
     sendResponse(res, 201, "", user);
   } catch (error) {
-    sendResponse(res, 500, "Inernal server error");
+    sendResponse(res, 500, "Inernal server dfhtgfhgfh error");
     console.log(error);
   }
 };
