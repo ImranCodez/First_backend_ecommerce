@@ -214,16 +214,22 @@ const getprofile = async (req, res) => {
 };
 
 const UpdateProfile = async (req, res) => {
-try {
+  try {
     const { fullname, address, phone, avatar } = req.body;
-   const UserId = req.user.id;
-    const user = await userSchema.findByIdAndUpdate(UserId,{fullname,address,phone,avatar}).select("fullname address phone avatar -_id")
-  console.log("udaste",user);
-  sendResponse(res,201,"",user)
-} catch (error) {
-  sendResponse(res,500,"Inernal server error")
-  console.log(error)
-}
+    const UserId = req.user.id;
+    const updatefield = {};
+    if (fullname) updatefield.fullname = fullname;
+    if (address) updatefield.address = address;
+    if (avatar) updatefield.avatar = avatar;
+    if (phone) updatefield.phone = phone;
+    const user = await userSchema
+      .findByIdAndUpdate(UserId, updatefield, { new: true })
+      .select("fullname address phone avatar -_id");
+    sendResponse(res, 201, "", user);
+  } catch (error) {
+    sendResponse(res, 500, "Inernal server error");
+    console.log(error);
+  }
 };
 
 module.exports = {
