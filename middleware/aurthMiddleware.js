@@ -6,7 +6,6 @@ const authMiddleware = (req, res, next) => {
     if (!token) return sendResponse(res, 400, "Invalid1111111111111 request");
     const decoded = verifyToken(token);
     if (!decoded) return sendResponse(res, 400, "Invalid 2222222222 request");
-    console.log(decoded);
     req.user = decoded;
     next();
   } catch (error) {

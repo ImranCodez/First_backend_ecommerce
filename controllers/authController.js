@@ -1,6 +1,7 @@
 const { isValidEmail } = require("../services/validation");
 const userSchema = require("../models/userthSchema");
 const { sendEmail } = require("../services/emailSender");
+const cloudinary = require("cloudinary").v2;
 const {
   generateAccsToken,
   generateRefToken,
@@ -220,12 +221,16 @@ const UpdateProfile = async (req, res) => {
     const UserId = req.user.id;
 
     const updatefield = {};
-
-    console.log("avatar=>", req.file);
-    // const base64ImageString = Buffer.from(req.file.buffer).toString('base64');
+  console.log("avatar Buffer",req.file)
+    const base64ImageString = req.file.buffer.toString("base64");
+    Console.log(base64ImageString);
+    sendResponse(res,200, true,base64ImageString)
     // const dataUri = `data:${req.file.mimeType};base64,${base64ImageString}`;
-    // sendResponse(res,200,"",dataUri)
+    // const cloudinaryres = await cloudinary.uploader.upload(dataUri);
+    // sendResponse(res, 200, " sucess", true, cloudinaryres);
+    return;
 
+    // cloudinerAcout_1
     if (fullname) updatefield.fullname = fullname;
     if (address) updatefield.address = address;
     if (avatar) updatefield.avatar = avatar;
@@ -235,6 +240,7 @@ const UpdateProfile = async (req, res) => {
       .select("fullname address phone avatar -_id");
     sendResponse(res, 201, "", user);
   } catch (error) {
+    return;
     sendResponse(res, 500, "Inernal server dfhtgfhgfh error");
     console.log(error);
   }
