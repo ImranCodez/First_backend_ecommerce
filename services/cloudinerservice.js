@@ -1,6 +1,11 @@
-// const cloudinary = require('cloudinary').v2;
-// cloudinary.config({ 
-//   cloud_name: 'my_cloud_name', 
-//   api_key: 'my_key', 
-//   api_secret: 'my_secret'
-// });
+const cloudinary = require('cloudinary').v2;
+
+const UploadTcloudinery=async(file)=>{
+    const base64ImageString =file.buffer.toString('base64');
+const dataUri = `data:${file.mimetype};base64,${base64ImageString}`;  
+  return await cloudinary.uploader.upload(dataUri);
+}
+
+
+
+module.exports=UploadTcloudinery

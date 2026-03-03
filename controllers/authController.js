@@ -1,7 +1,6 @@
 const { isValidEmail } = require("../services/validation");
 const userSchema = require("../models/userthSchema");
 const { sendEmail } = require("../services/emailSender");
-const cloudinary = require("cloudinary").v2;
 const {
   generateAccsToken,
   generateRefToken,
@@ -14,6 +13,7 @@ const {
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
+const UploadTcloudinery = require("../services/cloudinerservice");
 // ...........signup part...//
 const signupuser = async (req, res) => {
   try {
@@ -216,32 +216,23 @@ const getprofile = async (req, res) => {
 
 const UpdateProfile = async (req, res) => {
   try {
-    const { fullname, address, phone, avatar } = req.body;
-
+    const { fullname, address, phone } = req.body;
     const UserId = req.user.id;
-
     const updatefield = {};
-  console.log("avatar Buffer",req.file)
-    const base64ImageString = req.file.buffer.toString("base64");
-    Console.log(base64ImageString);
-    sendResponse(res,200, true,base64ImageString)
-    // const dataUri = `data:${req.file.mimeType};base64,${base64ImageString}`;
-    // const cloudinaryres = await cloudinary.uploader.upload(dataUri);
-    // sendResponse(res, 200, " sucess", true, cloudinaryres);
-    return;
-
+    const avatar = req.file;
+    console.log("avatar Buffer", req.file);
     // cloudinerAcout_1
     if (fullname) updatefield.fullname = fullname;
     if (address) updatefield.address = address;
-    if (avatar) updatefield.avatar = avatar;
+    if (avatar) {
+      const imaggeres = await UploadTcloudinery(avatar);
+      updatefield.avatar = imaggeres.secure_url;
+    }
     if (phone) updatefield.phone = phone;
-    const user = await userSchema
-      .findByIdAndUpdate(UserId, updatefield, { new: true })
-      .select("fullname address phone avatar -_id");
-    sendResponse(res, 201, "", user);
+    const user = await userSchema.findByIdAndUpdate(UserId, updatefield, { new: true }).select("fullname address phone avatar -_id");
+    sendResponse(res, 201, "",true, user);
   } catch (error) {
-    return;
-    sendResponse(res, 500, "Inernal server dfhtgfhgfh error");
+    sendResponse(res, 500, "Inernal server error Boss!");
     console.log(error);
   }
 };
