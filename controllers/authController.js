@@ -220,16 +220,16 @@ const UpdateProfile = async (req, res) => {
     const UserId = req.user.id;
     const updatefield = {};
     const avatar = req.file;
+    const user = await userSchema.findByIdAndUpdate(UserId, updatefield, { new: true }).select("fullname address phone avatar -_id");
     console.log("avatar Buffer", req.file);
     // cloudinerAcout_1
     if (fullname) updatefield.fullname = fullname;
     if (address) updatefield.address = address;
     if (avatar) {
-      const imaggeres = await UploadTcloudinery(avatar);
+      const imaggeres = await UploadTcloudinery(avatar,"avatar");
       updatefield.avatar = imaggeres.secure_url;
     }
     if (phone) updatefield.phone = phone;
-    const user = await userSchema.findByIdAndUpdate(UserId, updatefield, { new: true }).select("fullname address phone avatar -_id");
     sendResponse(res, 201, "",true, user);
   } catch (error) {
     sendResponse(res, 500, "Inernal server error Boss!");
