@@ -37,15 +37,15 @@ const resetpassToken = () => {
 };
 
 const hashverifytoken = (token) => {
- const hasverify= crypto.createHash("sha256").update(token).digest("hex");
- return hasverify;
+  const hasverify = crypto.createHash("sha256").update(token).digest("hex");
+  return hasverify;
   // return JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
 };
 // .......verufytoken.....//
 const verifyToken = (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("verfudsecoded", decoded);
+    console.log("verfdsecoded", decoded);
     return decoded;
   } catch (error) {
     console.log("JWT Error:", error.message);

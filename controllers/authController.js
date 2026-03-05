@@ -222,17 +222,14 @@ const UpdateProfile = async (req, res) => {
     const avatar = req.file;
     const user = await userSchema
       .findById(UserId)
-      .select("fullname address phone avatar -_id");
+      .select("-password -isVerified -otp -otpExpires -createdAt -updatedAt");
     // cloudinerAcout_1
-    console.log(user);
     if (avatar) {
       // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
-      // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
-      // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
 
-      // const PublicId = user.avatar.split("/").pop().split(".")[0];
-      // console.log(PublicId);
-      // DeletfromConfig(`avatar/${PublicId}`);
+      const PublicId = user.avatar.split("/").pop().split(".")[0];
+      console.log(PublicId);
+      DeletfromConfig(`avatar/${PublicId}`);
       const imaggeres = await UploadTcloudinery(avatar, "avatar");
       user.avatar = imaggeres.secure_url;
     }
@@ -240,7 +237,7 @@ const UpdateProfile = async (req, res) => {
     if (address) user.address = address;
     if (phone) user.phone = phone;
     user.save();
-    sendResponse(res, 201, "", true, user);
+    sendResponse(res, 201, "your update is scucessfull", true, user);
   } catch (error) {
     sendResponse(res, 500, "Inernal server error Boss!");
     console.log(error);
