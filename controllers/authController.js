@@ -13,7 +13,8 @@ const {
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
-const UploadTcloudinery = require("../services/cloudinerservice");
+const { UploadTcloudinery } = require("../services/cloudinerservice");
+const { DeletfromConfig } = require("../services/cloudinerservice");
 // ...........signup part...//
 const signupuser = async (req, res) => {
   try {
@@ -218,19 +219,28 @@ const UpdateProfile = async (req, res) => {
   try {
     const { fullname, address, phone } = req.body;
     const UserId = req.user.id;
-    const updatefield = {};
     const avatar = req.file;
-    const user = await userSchema.findByIdAndUpdate(UserId, updatefield, { new: true }).select("fullname address phone avatar -_id");
-    console.log("avatar Buffer", req.file);
+    const user = await userSchema
+      .findById(UserId)
+      .select("fullname address phone avatar -_id");
     // cloudinerAcout_1
-    if (fullname) updatefield.fullname = fullname;
-    if (address) updatefield.address = address;
+    console.log(user);
     if (avatar) {
-      const imaggeres = await UploadTcloudinery(avatar,"avatar");
-      updatefield.avatar = imaggeres.secure_url;
+      // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
+      // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
+      // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
+
+      // const PublicId = user.avatar.split("/").pop().split(".")[0];
+      // console.log(PublicId);
+      // DeletfromConfig(`avatar/${PublicId}`);
+      const imaggeres = await UploadTcloudinery(avatar, "avatar");
+      user.avatar = imaggeres.secure_url;
     }
-    if (phone) updatefield.phone = phone;
-    sendResponse(res, 201, "",true, user);
+    if (fullname) user.fullname = fullname;
+    if (address) user.address = address;
+    if (phone) user.phone = phone;
+    user.save();
+    sendResponse(res, 201, "", true, user);
   } catch (error) {
     sendResponse(res, 500, "Inernal server error Boss!");
     console.log(error);
