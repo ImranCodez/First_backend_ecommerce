@@ -6,6 +6,7 @@ const {
   generateRefToken,
   resetpassToken,
   hashverifytoken,
+  verifyToken,
 } = require("../services/token");
 const sendResponse = require("../services/responsiveHandler");
 const {
@@ -61,6 +62,7 @@ const singinuser = async (req, res) => {
     if (!email) return res.status(400).send({ message: "email is required" });
     if (!password)
       return res.status(400).send({ message: "password is required" });
+    
     const existingUser = await userSchema.findOne({ email });
     if (!existingUser)
       return res
@@ -244,13 +246,38 @@ const UpdateProfile = async (req, res) => {
   }
 };
 
+//  ...regenerate accstoekn using refreshtoken..........//
+const refreshrtoken = async (req, res) => {
+  try {
+    const refreshtoken =
+      req.cookies?.["x-Xreftoken"] || req.headers.authorization;
+    if (!refreshtoken) return sendResponse(res, 400, "Refresh token missing");
+
+    // ........verfy...//
+    const decoded = verifyToken(refreshtoken);
+    if (!decoded) return sendResponse(res, 400, "");
+    const accessToken = generateAccsToken(decoded);
+    const cookieAcsOptions = {
+      httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
+      maxAge: 1000 * 60 * 40, // Cookie expiry time in milliseconds (e.g., 15 minutes)
+      secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
+      // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
+    };
+    req.cookie("accessToken", accessToken, cookieAcsOptions);
+  } catch (error) {
+    sendResponse(res, 500, "Internal server error");
+    console.log(error);
+  }
+};
+
 module.exports = {
   signupuser,
-  singinuser,
   verifyOtp,
   regenerateOtp,
+  singinuser,
   forgatepass,
   resetpassword,
   getprofile,
   UpdateProfile,
+  refreshrtoken
 };
