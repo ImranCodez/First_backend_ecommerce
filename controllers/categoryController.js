@@ -1,6 +1,5 @@
 const categorySchema = require("../models/categorySchema");
 const sendResponse = require("../services/responsiveHandler");
-
 const CreateNewcategory=(req,res)=>{
  try {
    const {name,description}= req.body;

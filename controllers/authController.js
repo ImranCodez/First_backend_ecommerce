@@ -242,7 +242,6 @@ const UpdateProfile = async (req, res) => {
     sendResponse(res, 201, "your update is scucessfull", true, user);
   } catch (error) {
     sendResponse(res, 500, "Inernal server error Boss!");
-    console.log(error);
   }
 };
 
@@ -269,7 +268,6 @@ const refreshrtoken = async (req, res) => {
     console.log(error);
   }
 };
-
 module.exports = {
   signupuser,
   verifyOtp,
