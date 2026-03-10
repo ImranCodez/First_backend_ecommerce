@@ -24,6 +24,5 @@ route.post("/forgetepass", forgatepass);
 route.get("/resetpass/:token", resetpassword);
 (route.get("/profile", authMiddleware, getprofile),
   route.put("/profile", authMiddleware, upload.single("avatar"), UpdateProfile),
-
-  route.post("/refreshtoken",refreshrtoken)
-  (module.exports = route));
+  route.post("/refreshtoken", refreshrtoken));
+module.exports = route;
