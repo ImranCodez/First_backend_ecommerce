@@ -62,7 +62,7 @@ const singinuser = async (req, res) => {
     if (!email) return res.status(400).send({ message: "email is required" });
     if (!password)
       return res.status(400).send({ message: "password is required" });
-    
+
     const existingUser = await userSchema.findOne({ email });
     if (!existingUser)
       return res
@@ -145,13 +145,25 @@ const regenerateOtp = async (req, res) => {
     const generateOTP = generateotp();
     user.otp = generateOTP;
     user.otpExpires = Date.now() * 2 * 60 * 1000;
+    const newotp = new userSchema({
+      otp: generateOTP,
+      otpExpires: Date.now() * 2 * 60 * 1000,
+    });
+    newotp.save()
     sendEmail({
       email,
       subject: "Email varification",
       template: emailvarifyTemplate,
       otp: generateOTP,
     });
-    res.status(201).send({ message: "otp send your email is succcessfully" });
+
+    sendResponse(
+      res,
+      201,
+      "send otp i your email is successfully",
+      true,
+      generateOTP,
+    );
   } catch (error) {
     console.log(error);
     res.status(500).send("Internal server error");
@@ -230,7 +242,6 @@ const UpdateProfile = async (req, res) => {
       // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
 
       const PublicId = user.avatar.split("/").pop().split(".")[0];
-      console.log(PublicId);
       DeletfromConfig(`avatar/${PublicId}`);
       const imaggeres = await UploadTcloudinery(avatar, "avatar");
       user.avatar = imaggeres.secure_url;
@@ -277,5 +288,5 @@ module.exports = {
   resetpassword,
   getprofile,
   UpdateProfile,
-  refreshrtoken
+  refreshrtoken,
 };
