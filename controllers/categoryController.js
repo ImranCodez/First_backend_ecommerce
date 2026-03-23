@@ -16,7 +16,6 @@ const CreateNewcategory=(req,res)=>{
  } catch (error) {
    sendResponse(res,500,"Internal server error")
     console.log(error);
-   
  }
 }
 
