@@ -1,8 +1,8 @@
 const sendResponse = require("../services/responsiveHandler");
 
-const rolecheckmiddleware = (req, res) => {
+const rolecheckmiddleware = (req, res,next) => {
   try {
-    console.log(req.user);
+    console.log("myuser",req.user);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
   }

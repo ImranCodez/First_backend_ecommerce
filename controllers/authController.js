@@ -1,5 +1,5 @@
 const { isValidEmail } = require("../services/validation");
-const userSchema = require("../models/userthSchema");
+const User = require("../models/userthSchema");
 const { sendEmail } = require("../services/emailSender");
 const {
   generateAccsToken,
@@ -63,7 +63,7 @@ const singinuser = async (req, res) => {
     if (!password)
       return res.status(400).send({ message: "password is required" });
 
-    const existingUser = await userSchema.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (!existingUser)
       return res
         .status(404)
@@ -99,13 +99,13 @@ const singinuser = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-
+       console.log(email,otp)
     // 1️⃣ Validation
     if (!email) return res.status(400).send("email is required");
     if (!otp) return res.status(400).send("otp is required");
 
     // 2️⃣ Find user
-    const user = await userSchema.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).send("User not found");
 
     // 3️⃣ Check OTP match
@@ -131,28 +131,32 @@ const verifyOtp = async (req, res) => {
       isVerified: true,
     });
   } catch (error) {
+     sendResponse(res,500,"Internal server error")
     console.error(error);
-    res.status(500).send("Internal Server error");
+  
   }
 };
 // ........regenerate........//
 const regenerateOtp = async (req, res) => {
   try {
     const { email } = req.body;
+
     if (!email) return sendResponse(res, 400, "email is required");
-    const user = await userSchema.findOne({ email, isVerified: false });
-    if (!user) return res.status(400).send("Invalid email");
+
+    const user = await User.findOne({ email, isVerified: false });
+
+    if (!user) return sendResponse(res, 400, "Invalid email");
+
     const generateOTP = generateotp();
+
     user.otp = generateOTP;
-    user.otpExpires = Date.now() * 2 * 60 * 1000;
-    const newotp = new userSchema({
-      otp: generateOTP,
-      otpExpires: Date.now() * 2 * 60 * 1000,
-    });
-    newotp.save()
-    sendEmail({
+    user.otpExpires = Date.now() + 2 * 60 * 1000;
+
+    await user.save();
+
+    await sendEmail({
       email,
-      subject: "Email varification",
+      subject: "Email verification",
       template: emailvarifyTemplate,
       otp: generateOTP,
     });
@@ -160,13 +164,14 @@ const regenerateOtp = async (req, res) => {
     sendResponse(
       res,
       201,
-      "send otp i your email is successfully",
+      "OTP sent successfully",
       true,
-      generateOTP,
+      generateOTP
     );
+
   } catch (error) {
     console.log(error);
-    res.status(500).send("Internal server error");
+    sendResponse(res, 500, "Internal server error");
   }
 };
 // ........forgatepass............//
