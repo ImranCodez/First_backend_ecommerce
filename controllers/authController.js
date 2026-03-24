@@ -25,13 +25,13 @@ const signupuser = async (req, res) => {
     if (!isValidEmail(email))
       return sendResponse(res, 400, " email is not valid");
     if (!password) return sendResponse(res, 400, "password is required");
-    const existingUser = await userSchema.findOne({
+    const existingUser = await User.findOne({
       email: email.toLowerCase(),
     });
     if (existingUser)
       return sendResponse(res, 400, "User already exists with this email");
     const generateOTP = generateotp();
-    const user = new userSchema({
+    const user = new User({
       fullname,
       email: email.toLowerCase(),
       password,

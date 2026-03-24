@@ -26,5 +26,15 @@ const CreateNewcategory = async (req, res) => {
     console.log(error);
   }
 };
-
-module.exports = { CreateNewcategory };
+// .......ger alll category ....//
+const getallcategories = async (req, res) => {
+  try {
+    const categories = await categorySchema.find({});
+    
+    
+    sendResponse(res,200,"",true,categories)
+  } catch (error) {
+    sendResponse(res, 500, "internal server error");
+  }
+};
+module.exports = { CreateNewcategory,getallcategories  };
