@@ -1,10 +1,19 @@
+const { set } = require("mongoose");
 const productSchema = require("../models/productSchema");
 const { UploadTcloudinery } = require("../services/cloudinerservice");
 const sendResponse = require("../services/responsiveHandler");
-
+const SIZE_ENUM = ["s", "m", "L", "xl", "2xl", "3xl"];
 const createproduct = async (req, res) => {
   try {
-    const { title, description, category, price, discountpercentage, tags,variants } = req.body;
+    const {
+      title,
+      description,
+      category,
+      price,
+      discountpercentage,
+      tags,
+      variants,
+    } = req.body;
     // const thumbnail = req.files?.thumbnail;
     // const images = req.files?.images;
     // if (!title) return sendResponse(res, 400, "title is required");
@@ -33,9 +42,24 @@ const createproduct = async (req, res) => {
     //     return imagesUrl.secure_url;
     //   })
     // );
-    
-   console.log(Array.isArray(variants))
-     if(!Array.isArray(variants)||variants.length==0) return sendResponse(res,400,"minimum 1 variansts is required");
+
+    if (!Array.isArray(variants) || variants.length == 0)
+      return sendResponse(res, 400, "minimum 1 variansts is required");
+    console.log(Array.isArray(variants));
+    for (const variant of variants) {
+      if (!variant.sku) return sendResponse(res, 400, "sku is required ");
+      if (!variant.color) return sendResponse(res, 400, "color is required ");
+      if (!variant.sizes) return sendResponse(res, 400, "sizes is required ");
+      if (!SIZE_ENUM.includes(variant.sizes))
+        return sendResponse(res, 400, "invalid size");
+      if (!variant.stock  || variant.stock>1) return sendResponse(res, 400, "stock is required ");
+    }
+    const skus = variants.map((v) => v.sku);
+
+    if (new Set(skus).size !== skus.length) {
+      return sendResponse(res, 400, "sku must be unique");
+    }
+
     // const createproduct = new productSchema({
     //   title,
     //   description,
@@ -53,7 +77,5 @@ const createproduct = async (req, res) => {
     console.log(error);
   }
 };
-
-
 
 module.exports = { createproduct };
