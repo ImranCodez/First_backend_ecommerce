@@ -1,10 +1,16 @@
+const sendResponse = require("./responsiveHandler");
+
 const cloudinary = require("cloudinary").v2;
 
 const UploadTcloudinery = async (file, folder) => {
-  const base64ImageString = file.buffer.toString("base64");
-  const dataUri = `data:${file.mimetype};base64,${base64ImageString}`;
+  try {
+    const base64ImageString = file.buffer.toString("base64");
+  const dataurl = `data:${file.mimetype};base64,${base64ImageString}`;
   // ..........for folder creation creation.......//
-  return await cloudinary.uploader.upload(dataUri, { folder });
+  return await cloudinary.uploader.upload(dataurl, { folder });
+  } catch (error) {
+    console.log(error)
+  }
 };
 // ............for  delete img from cloudinery ............//
 const DeletfromConfig = async (PublicId) => {

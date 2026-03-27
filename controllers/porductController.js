@@ -20,26 +20,25 @@ const createproduct = async (req, res) => {
     // if (!thumbnail || thumbnail?.length===0) return sendResponse(res, 400, "thumbnail is required");
     if (images && images?.length < 4)
       return sendResponse(res, 400, "you cant't upload images max 4");
-    const thumbnailimg= await UploadTcloudinery(thumbnail[0], "thumbnail");
-   
-    
-    // let imgurl;
-    // if(images){
-    //    imgurl = images.map(async (images) => {
-    //   const imagesUrl = await UploadTcloudinery(images, "product");
-    //   console.log("uploadimage",imagesUrl)
-    //   return imagesUrl.secure_url;
-    // });
-    // }
+    const thumbnailimg = await UploadTcloudinery(thumbnail[0], "thumbnail");
+    let imagesUrl = [];
+    if (images) {
+      for (const img of images) {
+        const imgurl = await UploadTcloudinery(img, "product");
+        imagesUrl.push(imgurl.secure_url);
+      }
+    }
 
-    let imgurl = await Promise.all(
-  images.map(async (image) => {
-    const imagesUrl = await UploadTcloudinery(image, "product");
-    return imagesUrl.secure_url;
-  })
-);
+    console.log(imagesUrl);
 
-console.log("arrayurl", imgurl);
+    //     let imgurl = await Promise.all(
+    //   images.map(async (image) => {
+    //     const imagesUrl = await UploadTcloudinery(image, "product");
+    //     return imagesUrl.secure_url;
+    //   })
+    // );
+
+    // console.log("arrayurl", imgurl);
 
     // const createproduct = new productSchema({
     //   title,
