@@ -24,6 +24,8 @@ const createproduct = async (req, res) => {
     if (!title) return sendResponse(res, 400, "title is required");
     if (!description) return sendResponse(res, 400, "description is required");
     if (!slug) return sendResponse(res, 400, "slug is required");
+    const isSlugExist = await productSchema.findOne({slug:slug.toLowerCase()});
+    if(isSlugExist) return sendResponse(res,400,"this slug is already exist");
     if (!category) return sendResponse(res, 400, "category is required");
     const isCategoryExist = await categorySchema.findById(category);
     if (!isCategoryExist) return sendResponse(res, 400, "invalid category");
