@@ -24,12 +24,15 @@ const createproduct = async (req, res) => {
     if (!title) return sendResponse(res, 400, "title is required");
     if (!description) return sendResponse(res, 400, "description is required");
     if (!slug) return sendResponse(res, 400, "slug is required");
-    const isSlugExist = await productSchema.findOne({slug:slug.toLowerCase()});
-    if(isSlugExist) return sendResponse(res,400,"this slug is already exist");
+    const isSlugExist = await productSchema.findOne({
+      slug: slug.toLowerCase(),
+    });
+    if (isSlugExist)
+      return sendResponse(res, 400, "this slug is already exist");
     if (!category) return sendResponse(res, 400, "category is required");
     const isCategoryExist = await categorySchema.findById(category);
     if (!isCategoryExist) return sendResponse(res, 400, "invalid category");
-    if (!price) return sendResponse(res, 400, "price is required"); 
+    if (!price) return sendResponse(res, 400, "price is required");
     if (!Array.isArray(varinatsData) || varinatsData.length == 0)
       return sendResponse(res, 400, "minimum 1 variansts is required");
     console.log(Array.isArray(variants));
@@ -47,9 +50,8 @@ const createproduct = async (req, res) => {
 
     if (new Set(skus).size !== skus.length) {
       return sendResponse(res, 400, "sku must be unique");
-    };
-    
-    
+    }
+
     if (!thumbnail || thumbnail?.length === 0)
       return sendResponse(res, 400, "thumbnail is required");
     if (images && images?.length > 4)
@@ -61,15 +63,15 @@ const createproduct = async (req, res) => {
         return imagesUrl.secure_url;
       }),
     );
-    
-        // let imagesUrl = [];
-        // if (images) {
-        //   for (const img of images) {
-        //     const imgurl = await UploadTcloudinery(img, "product");
-        //     imagesUrl.push(imgurl.secure_url);
-        //   }
-        // }
-        // console.log(imagesUrl);
+
+    // let imagesUrl = [];
+    // if (images) {
+    //   for (const img of images) {
+    //     const imgurl = await UploadTcloudinery(img, "product");
+    //     imagesUrl.push(imgurl.secure_url);
+    //   }
+    // }
+    // console.log(imagesUrl);
 
     const createproduct = new productSchema({
       title,
@@ -85,11 +87,43 @@ const createproduct = async (req, res) => {
       tags,
     });
     createproduct.save();
-    return sendResponse(res, 201, "product created sucessfull",true);
+    return sendResponse(res, 201, "product created sucessfull", true);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
     console.log(error);
   }
 };
+const getproductLis = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const catgory = req.query.category;
+    const skip = (page - 1) * limit;
+    const totallproducts = await productSchema.countDocuments();
+    console.log(totallproducts);
+    const productList = await productSchema
+      .find()
+      .populate("category","name")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+    console.log(productList);
 
-module.exports = { createproduct };
+    const totllpages = Math.ceil(totallproducts / limit);
+
+    sendResponse(res, 200, "", true,{ 
+      prodcuts: productList,
+      pagination: {
+        totall: totallproducts,
+        limit,
+        page,
+        totllpages,
+        hasNexPage: page < totllpages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    sendResponse(res, 500, "Interlnal server error");
+  }
+};
+module.exports = { createproduct, getproductLis };
