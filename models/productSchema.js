@@ -21,14 +21,21 @@ const productSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
+  slug:{
+    type:String,
+    required:true,
+    unique:true
+  },
 
   thumbnail: {
     type: String,
     required: true,
   },
-  images: {
-    type: Array,
-  },
+  images:[
+    {
+      type:String
+    }
+  ],
   variants: [
     {
       sku: {
@@ -36,8 +43,7 @@ const productSchema = mongoose.Schema({
         required: true,
         inique: true,
       },
-      atributes: {
-        color: {
+     color: {
           type: String,
           required: true,
         },
@@ -50,13 +56,13 @@ const productSchema = mongoose.Schema({
           type: Number,
           required: true,
         },
-      },
     },
   ],
-  tags: {
-    type: String,
-    required: true,
-  },
+  tags:[
+    {
+      type:String
+    }
+  ],
   isActive:{
      type:Boolean,
      default:false
