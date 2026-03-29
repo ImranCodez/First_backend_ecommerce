@@ -7,5 +7,5 @@ const route = express.Router();
 const upload=multer()
 
 route.post("/create",authMiddleware,rolecheckmiddleware("user"),upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]), createproduct);
-route.post("/getproduct",getproductLis)
+route.get("/getproduct",getproductLis)
 module.exports = route;

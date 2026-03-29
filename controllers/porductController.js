@@ -97,21 +97,62 @@ const getproductLis = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const catgory = req.query.category;
+    const category = req.query.category;
     const skip = (page - 1) * limit;
     const totallproducts = await productSchema.countDocuments();
     console.log(totallproducts);
-    const productList = await productSchema
-      .find()
-      .populate("category","name")
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+    const pipeline = [
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      { $unwind: "$category" },
+    
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      // {
+      //   $project: {
+      //     title,
+      //     thumbnail,
+      //     description,
+      //     category, 
+      //     price,
+      //     discountpercentage,
+      //     slug,
+      //     images,
+      //     variants,
+      //     tags,
+      //   },
+      // },
+    ];
+    if(category){
+      pipeline.push({
+        $match: {
+          "category.name":category,
+        },
+      },)
+    }
+    const productList = await productSchema.aggregate(pipeline);
+
     console.log(productList);
+
+    // console.log(totallproducts);
+    // const productList = await productSchema
+    //   .find()
+    //   .populate("category","name")
+    //   .skip(skip)
+    //   .limit(limit)
+    //   .sort({ createdAt: -1 });
+    // console.log(productList);
 
     const totllpages = Math.ceil(totallproducts / limit);
 
-    sendResponse(res, 200, "", true,{ 
+    sendResponse(res, 200, "", true, {
       prodcuts: productList,
       pagination: {
         totall: totallproducts,
@@ -123,6 +164,7 @@ const getproductLis = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     sendResponse(res, 500, "Interlnal server error");
   }
 };
