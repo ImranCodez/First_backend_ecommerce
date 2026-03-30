@@ -93,6 +93,7 @@ const createproduct = async (req, res) => {
     console.log(error);
   }
 };
+// .... getproduct part ......//
 const getproductLis = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
