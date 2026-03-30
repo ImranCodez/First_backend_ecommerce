@@ -3,19 +3,21 @@ const { UploadTcloudinery } = require("../services/cloudinerservice");
 const sendResponse = require("../services/responsiveHandler");
 const CreateNewcategory = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description,slug } = req.body;
     const thumbnail = req.file;
     console.log(name);
     console.log(thumbnail);
     if (!name) sendResponse(res, 400, "name is required");
+    if (!slug) sendResponse(res, 400, "slug is required");
     if (!thumbnail) sendResponse(res, 400, " thumnail is required");
-    const EixistingName = await categorySchema.findOne({ name });
-    if (EixistingName)
-      return sendResponse(res, 400, "this name is already exist");
+    const Eixistingslug = await categorySchema.findOne({ slug });
+    if (Eixistingslug)
+      return sendResponse(res, 400, "this slug is already exist");
     const thumimg = await UploadTcloudinery(thumbnail, "thumbnail");
     console.log("myimage", thumimg);
     const category = new categorySchema({
       name,
+      slug,
       description,
       thumbnail: thumimg.secure_url,
     });
