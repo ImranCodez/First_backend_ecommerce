@@ -5,8 +5,7 @@ const CreateNewcategory = async (req, res) => {
   try {
     const { name, description,slug } = req.body;
     const thumbnail = req.file;
-    console.log(name);
-    console.log(thumbnail);
+
     if (!name) sendResponse(res, 400, "name is required");
     if (!slug) sendResponse(res, 400, "slug is required");
     if (!thumbnail) sendResponse(res, 400, " thumnail is required");
@@ -14,7 +13,6 @@ const CreateNewcategory = async (req, res) => {
     if (Eixistingslug)
       return sendResponse(res, 400, "this slug is already exist");
     const thumimg = await UploadTcloudinery(thumbnail, "thumbnail");
-    console.log("myimage", thumimg);
     const category = new categorySchema({
       name,
       slug,

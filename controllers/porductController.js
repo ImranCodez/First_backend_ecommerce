@@ -3,7 +3,7 @@ const productSchema = require("../models/productSchema");
 const { UploadTcloudinery } = require("../services/cloudinerservice");
 const sendResponse = require("../services/responsiveHandler");
 const categorySchema = require("../models/categorySchema");
-const SIZE_ENUM = ["s", "m", "L", "xl", "2xl", "3xl"];
+const SIZE_ENUM = require("../services/utils");
 const createproduct = async (req, res) => {
   try {
     const {
@@ -35,7 +35,6 @@ const createproduct = async (req, res) => {
     if (!price) return sendResponse(res, 400, "price is required");
     if (!Array.isArray(varinatsData) || varinatsData.length == 0)
       return sendResponse(res, 400, "minimum 1 variansts is required");
-    console.log(Array.isArray(variants));
     for (const variant of varinatsData) {
       if (!variant.sku) return sendResponse(res, 400, "sku is required ");
       if (!variant.color) return sendResponse(res, 400, "color is required ");
@@ -46,12 +45,9 @@ const createproduct = async (req, res) => {
         return sendResponse(res, 400, "stock is required ");
     }
     const skus = varinatsData.map((v) => v.sku);
-    console.log(skus);
-
     if (new Set(skus).size !== skus.length) {
       return sendResponse(res, 400, "sku must be unique");
     }
-
     if (!thumbnail || thumbnail?.length === 0)
       return sendResponse(res, 400, "thumbnail is required");
     if (images && images?.length > 4)
@@ -104,6 +100,11 @@ const getproductLis = async (req, res) => {
     console.log(totallproducts);
     const pipeline = [
       {
+        $match: {
+          isActive: true,
+        },
+      },
+      {
         $lookup: {
           from: "categories",
           localField: "category",
@@ -112,31 +113,31 @@ const getproductLis = async (req, res) => {
         },
       },
       { $unwind: "$category" },
-    
+
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
-      // {
-      //   $project: {
-      //     title,
-      //     thumbnail,
-      //     description,
-      //     category, 
-      //     price,
-      //     discountpercentage,
-      //     slug,
-      //     images,
-      //     variants,
-      //     tags,
-      //   },
-      // },
+      {
+        $project: {
+          title,
+          thumbnail,
+          description,
+          category,
+          price,
+          discountpercentage,
+          slug,
+          images,
+          variants,
+          tags,
+        },
+      },
     ];
-    if(category){
+    if (category) {
       pipeline.push({
         $match: {
-          "category.name":category,
+          "category.slug": category,
         },
-      },)
+      });
     }
     const productList = await productSchema.aggregate(pipeline);
 
@@ -169,4 +170,32 @@ const getproductLis = async (req, res) => {
     sendResponse(res, 500, "Interlnal server error");
   }
 };
-module.exports = { createproduct, getproductLis };
+// ......get single products details......//
+const singleproductsdeatils = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const productdata = await productSchema.find({ slug,isActive:true }).populate("category","name").select("-isActive -updatedAt -_v");
+    if (!productdata) return sendResponse(res, 404, "product not found");
+    sendResponse(res, 200, "", true, productdata);
+  } catch (error) {
+    sendResponse(res, 500, "internal server error");
+  }
+};
+const updateroduct= async(req,res)=>{
+  try {
+    const {title,
+      description,
+      category,
+      price,
+      discountpercentage,
+      tags,
+      variants,
+      isActive,} = req.body;
+  const {slug}=req.params;
+  const productdata = await productSchema.findOne({slug})
+
+  } catch (error) {
+    sendResponse(res,500,"Internal server error")
+  }
+}
+module.exports = { createproduct, getproductLis, singleproductsdeatils,updateroduct };
