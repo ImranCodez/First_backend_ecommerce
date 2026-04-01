@@ -193,7 +193,6 @@ const updateroduct= async(req,res)=>{
       isActive,} = req.body;
   const {slug}=req.params;
   const productdata = await productSchema.findOne({slug})
-
   } catch (error) {
     sendResponse(res,500,"Internal server error")
   }
