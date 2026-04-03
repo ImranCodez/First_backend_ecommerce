@@ -97,7 +97,6 @@ const getproductLis = async (req, res) => {
     const category = req.query.category;
     const skip = (page - 1) * limit;
     const totallproducts = await productSchema.countDocuments();
-    console.log(totallproducts);
     const pipeline = [
       {
         $match: {
@@ -118,7 +117,7 @@ const getproductLis = async (req, res) => {
       { $skip: skip },
       { $limit: limit },
       {
-        $project: {
+        $project:{
           title,
           thumbnail,
           description,
@@ -186,7 +185,7 @@ const updateroduct= async(req,res)=>{
     const {title,
       description,
       category,
-      price,
+      price, 
       discountpercentage,
       tags,
       variants,
