@@ -97,47 +97,50 @@ const getproductLis = async (req, res) => {
     const category = req.query.category;
     const skip = (page - 1) * limit;
     const totallproducts = await productSchema.countDocuments();
-    const pipeline = [
-      {
-        $match: {
-          isActive: true,
-        },
-      },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "category",
-          foreignField: "_id",
-          as: "category",
-        },
-      },
-      { $unwind: "$category" },
+   const pipeline = [
+  {
+    $match: { isActive: true },
+  },
+  {
+    $lookup: {
+      from: "categories",
+      localField: "category",
+      foreignField: "_id",
+      as: "category",
+    },
+  },
+  { $unwind: "$category" },
 
-      { $sort: { createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit },
-      {
-        $project:{
-          title,
-          thumbnail,
-          description,
-          category,
-          price,
-          discountpercentage,
-          slug,
-          images,
-          variants,
-          tags,
-        },
-      },
-    ];
-    if (category) {
-      pipeline.push({
-        $match: {
-          "category.slug": category,
-        },
-      });
-    }
+  ...(category ? [{
+    $match: { "category.slug": category }
+  }] : []),
+
+  { $sort: { createdAt: -1 } },
+  { $skip: skip },
+  { $limit: limit },
+
+  {
+    $project: {
+      title: 1,
+      thumbnail: 1,
+      description: 1,
+      category: 1,
+      price: 1,
+      discountpercentage: 1,
+      slug: 1,
+      images: 1,
+      variants: 1,
+      tags: 1,
+    },
+  },
+];
+    // if (category) {
+    //   pipeline.push({
+    //     $match: {
+    //       "category.slug": category,
+    //     },
+    //   });
+    // }
     const productList = await productSchema.aggregate(pipeline);
 
     console.log(productList);
