@@ -97,43 +97,47 @@ const getproductLis = async (req, res) => {
     const category = req.query.category;
     const skip = (page - 1) * limit;
     const totallproducts = await productSchema.countDocuments();
-   const pipeline = [
-  {
-    $match: { isActive: true },
-  },
-  {
-    $lookup: {
-      from: "categories",
-      localField: "category",
-      foreignField: "_id",
-      as: "category",
-    },
-  },
-  { $unwind: "$category" },
+    const pipeline = [
+      {
+        $match: { isActive: true },
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      { $unwind: "$category" },
 
-  ...(category ? [{
-    $match: { "category.slug": category }
-  }] : []),
+      ...(category
+        ? [
+            {
+              $match: { "category.slug": category },
+            },
+          ]
+        : []),
 
-  { $sort: { createdAt: -1 } },
-  { $skip: skip },
-  { $limit: limit },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
 
-  {
-    $project: {
-      title: 1,
-      thumbnail: 1,
-      description: 1,
-      category: 1,
-      price: 1,
-      discountpercentage: 1,
-      slug: 1,
-      images: 1,
-      variants: 1,
-      tags: 1,
-    },
-  },
-];
+      {
+        $project: {
+          title: 1,
+          thumbnail: 1,
+          description: 1,
+          category: 1,
+          price: 1,
+          discountpercentage: 1,
+          slug: 1,
+          images: 1,
+          variants: 1,
+          tags: 1,
+        },
+      },
+    ];
     // if (category) {
     //   pipeline.push({
     //     $match: {
@@ -153,7 +157,6 @@ const getproductLis = async (req, res) => {
     // console.log(productList);
 
     const totllpages = Math.ceil(totallproducts / limit);
-
     sendResponse(res, 200, "", true, {
       prodcuts: productList,
       pagination: {
@@ -174,27 +177,39 @@ const getproductLis = async (req, res) => {
 const singleproductsdeatils = async (req, res) => {
   try {
     const { slug } = req.params;
-    const productdata = await productSchema.find({ slug,isActive:true }).populate("category","name").select("-isActive -updatedAt -_v");
+    const productdata = await productSchema
+      .find({ slug, isActive: true })
+      .populate("category", "name")
+      .select("-isActive -updatedAt -_v");
     if (!productdata) return sendResponse(res, 404, "product not found");
     sendResponse(res, 200, "", true, productdata);
   } catch (error) {
     sendResponse(res, 500, "internal server error");
+    console.log(error)
+
   }
 };
-const updateroduct= async(req,res)=>{
+const updateroduct = async (req, res) => {
   try {
-    const {title,
+    const {
+      title,
       description,
       category,
-      price, 
+      price,
       discountpercentage,
       tags,
       variants,
-      isActive,} = req.body;
-  const {slug}=req.params;
-  const productdata = await productSchema.findOne({slug})
+      isActive,
+    } = req.body;
+    const { slug } = req.params;
+    const productdata = await productSchema.findOne({ slug });
   } catch (error) {
-    sendResponse(res,500,"Internal server error")
+    sendResponse(res, 500, "Internal server error");
   }
-}
-module.exports = { createproduct, getproductLis, singleproductsdeatils,updateroduct };
+};
+module.exports = {
+  createproduct,
+  getproductLis,
+  singleproductsdeatils,
+  updateroduct,
+};
