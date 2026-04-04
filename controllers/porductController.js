@@ -142,9 +142,7 @@ const getproductLis = async (req, res) => {
     //   });
     // }
     const productList = await productSchema.aggregate(pipeline);
-
     console.log(productList);
-
     // console.log(totallproducts);
     // const productList = await productSchema
     //   .find()
