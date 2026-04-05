@@ -13,7 +13,7 @@ const UploadTcloudinery = async (file, folder) => {
   }
 };
 // ............for  delete img from cloudinery ............//
-const DeletfromConfig = async (PublicId) => {
+const DeletfromCloudinary = async (PublicId) => {
   try {
     const result = await cloudinary.uploader.destroy(PublicId);
     console.log(result);
@@ -22,4 +22,4 @@ const DeletfromConfig = async (PublicId) => {
   }
 };
 
-module.exports = { UploadTcloudinery, DeletfromConfig };
+module.exports = { UploadTcloudinery, DeletfromCloudinary };

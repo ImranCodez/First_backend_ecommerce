@@ -14,8 +14,7 @@ const {
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
-const { UploadTcloudinery } = require("../services/cloudinerservice");
-const { DeletfromConfig } = require("../services/cloudinerservice");
+const { UploadTcloudinery, DeletfromCloudinary } = require("../services/cloudinerservice");
 // ...........signup part...//
 const signupuser = async (req, res) => {
   try {
@@ -247,7 +246,7 @@ const UpdateProfile = async (req, res) => {
       // https://res.cloudinary.com/doyafbivx/image/upload/v1772552335/avatar/mxuamgwizfsusq4x5lpl.png
 
       const PublicId = user.avatar.split("/").pop().split(".")[0];
-      DeletfromConfig(`avatar/${PublicId}`);
+      DeletfromCloudinary(`avatar/${PublicId}`);
       const imaggeres = await UploadTcloudinery(avatar, "avatar");
       user.avatar = imaggeres.secure_url;
     }

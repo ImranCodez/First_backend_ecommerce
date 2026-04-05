@@ -1,6 +1,9 @@
 const { set } = require("mongoose");
 const productSchema = require("../models/productSchema");
-const { UploadTcloudinery } = require("../services/cloudinerservice");
+const {
+  UploadTcloudinery,
+  DeletfromCloudinary,
+} = require("../services/cloudinerservice");
 const sendResponse = require("../services/responsiveHandler");
 const categorySchema = require("../models/categorySchema");
 const SIZE_ENUM = require("../services/utils");
@@ -52,7 +55,7 @@ const createproduct = async (req, res) => {
       return sendResponse(res, 400, "thumbnail is required");
     if (images && images?.length > 4)
       return sendResponse(res, 400, "you cant't upload images max 4");
-    const thumbnailimg = await UploadTcloudinery(thumbnail[0], "thumbnail");
+    const thumbnailimg = await UploadTcloudinery(thumbnail[0], "product");
     let imgurl = await Promise.all(
       images.map(async (image) => {
         const imagesUrl = await UploadTcloudinery(image, "product");
@@ -185,8 +188,7 @@ const singleproductsdeatils = async (req, res) => {
     sendResponse(res, 200, "", true, productdata);
   } catch (error) {
     sendResponse(res, 500, "internal server error");
-    console.log(error)
-
+    console.log(error);
   }
 };
 const updateroduct = async (req, res) => {
@@ -202,9 +204,46 @@ const updateroduct = async (req, res) => {
       isActive,
     } = req.body;
     const { slug } = req.params;
+    const thumbnail = req.files?.thumbnail;
+    const images = req.files?.images;
     const productdata = await productSchema.findOne({ slug });
+    if (title) productdata.title = title;
+    if (description) productdata.description = description;
+    if (category) productdata.category = category;
+    if (discountpercentage) productdata.discountpercentage = discountpercentage;
+    if (price) productdata.price = price;
+    if (tags.length > 0 && Array.isArray(tags)) productdata.tages = tags;
+    if (isActive) productdata.isActive = isActive = "true";
+    // .........apadoto parse....** varints part.....//
+    const varinatsData = JSON.parse(variants);
+    if (varinatsData.length > 0 && Array.isArray(varinatsData)) {
+      for (const variant of varinatsData) {
+        if (!variant.sku) sendResponse(res, 400, "sku is required");
+        if (!variant.color) sendResponse(res, 400, "color is required");
+        if (!variant.SIZE_ENUM.includes(size))
+          sendResponse(res, 400, "invalid size");
+        if (!variant.stock || variant.stock < 1)
+          sendResponse(res, 400, "stock is required and must be more then 0");
+      }
+    }
+
+    // .......thumbnail img cloudinery part .......//
+    if (thumbnail) {
+      const imagPublId = productdata.thumbnail.split("/").pop().split(".")[0];
+      DeletfromCloudinary(`product${imagPublId}`);
+      const imgres = await UploadTcloudinery(thumbnail, "product");
+      productdata.thumbnail = imgres.secure_url;
+    };
+    // .......productnimg clouddiner update part .......//
+    if(images){
+      const imagPublId = productdata.images.split("/").pop().split(".")[0];
+      DeletfromCloudinary(`product${imagPublId}`);
+      const imgres = await UploadTcloudinery(images, "product");
+      productdata.images = imgres.secure_url;
+    }
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
+    console.log(error)
   }
 };
 module.exports = {
