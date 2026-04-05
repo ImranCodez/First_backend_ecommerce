@@ -235,15 +235,9 @@ const updateroduct = async (req, res) => {
       productdata.thumbnail = imgres.secure_url;
     };
     // .......productnimg clouddiner update part .......//
-    if(images){
-      const imagPublId = productdata.images.split("/").pop().split(".")[0];
-      DeletfromCloudinary(`product${imagPublId}`);
-      const imgres = await UploadTcloudinery(images, "product");
-      productdata.images = imgres.secure_url;
-    }
+  
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
-    console.log(error)
   }
 };
 module.exports = {
