@@ -212,11 +212,11 @@ const updateroduct = async (req, res) => {
     if (category) productdata.category = category;
     if (discountpercentage) productdata.discountpercentage = discountpercentage;
     if (price) productdata.price = price;
-    if (tags.length > 0 && Array.isArray(tags)) productdata.tages = tags;
+    if (tags?.length > 0 && Array.isArray(tags)) productdata.tages = tags;
     if (isActive) productdata.isActive = isActive = "true";
     // .........apadoto parse....** varints part.....//
-    const varinatsData = JSON.parse(variants);
-    if (varinatsData.length > 0 && Array.isArray(varinatsData)) {
+    // const varinatsData = JSON.parse(variants);//
+    if (varinatsData?.length > 0 && Array.isArray(varinatsData)) {
       for (const variant of varinatsData) {
         if (!variant.sku) sendResponse(res, 400, "sku is required");
         if (!variant.color) sendResponse(res, 400, "color is required");
@@ -237,6 +237,7 @@ const updateroduct = async (req, res) => {
     // .......productnimg clouddiner update part .......//
   
   } catch (error) {
+    console.log(error)
     sendResponse(res, 500, "Internal server error");
   }
 };
