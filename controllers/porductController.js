@@ -7,6 +7,8 @@ const {
 const sendResponse = require("../services/responsiveHandler");
 const categorySchema = require("../models/categorySchema");
 const SIZE_ENUM = require("../services/utils");
+
+
 const createproduct = async (req, res) => {
   try {
     const {
@@ -88,7 +90,6 @@ const createproduct = async (req, res) => {
     return sendResponse(res, 201, "product created sucessfull", true);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
-    console.log(error);
   }
 };
 // .... getproduct part ......//
