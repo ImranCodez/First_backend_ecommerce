@@ -71,7 +71,6 @@ const createproduct = async (req, res) => {
     //   }
     // }
     // console.log(imagesUrl);
-
     const createproduct = new productSchema({
       title,
       description,
@@ -226,7 +225,6 @@ const updateroduct = async (req, res) => {
           sendResponse(res, 400, "stock is required and must be more then 0");
       }
     }
-
     // .......thumbnail img cloudinery part .......//
     if (thumbnail) {
       const imagPublId = productdata.thumbnail.split("/").pop().split(".")[0];
