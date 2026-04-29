@@ -91,14 +91,13 @@ const singinuser = async (req, res) => {
 
     sendResponse(res, 200, "Login is succesfull", true);
   } catch (error) {
-    console.log(error);
+     sendResponse(res,400,"Internal server error ")
   }
 };
 // .......otp verify......//
 const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-       console.log(email,otp)
     // 1️⃣ Validation
     if (!email) return res.status(400).send("email is required");
     if (!otp) return res.status(400).send("otp is required");
