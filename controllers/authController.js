@@ -50,7 +50,6 @@ const signupuser = async (req, res) => {
     sendResponse(res, 201, "signup is successfull");
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
-    console.log(error);
   }
 };
 // ..signin part .....//
@@ -168,7 +167,6 @@ const regenerateOtp = async (req, res) => {
     );
 
   } catch (error) {
-    console.log(error);
     sendResponse(res, 500, "Internal server error");
   }
 };
