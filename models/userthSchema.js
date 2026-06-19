@@ -62,7 +62,6 @@ userAuthSchema.pre("save", async function (next) {
     user.password = await bcrypt.hash(user.password, 10);
   } catch (err) {
     sendResponse(res, 500, "Internal server error");
-    console.log(err);
   }
 });
 

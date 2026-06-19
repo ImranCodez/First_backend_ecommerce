@@ -8,7 +8,6 @@ const sendResponse = require("../services/responsiveHandler");
 const categorySchema = require("../models/categorySchema");
 const SIZE_ENUM = require("../services/utils");
 
-
 const createproduct = async (req, res) => {
   try {
     const {
@@ -22,8 +21,6 @@ const createproduct = async (req, res) => {
       variants,
       isActive,
     } = req.body;
-    // .apadotor jonno //
-    const varinatsData = JSON.parse(variants);
     const thumbnail = req.files?.thumbnail;
     const images = req.files?.images;
     if (!title) return sendResponse(res, 400, "title is required");
@@ -32,18 +29,21 @@ const createproduct = async (req, res) => {
     const isSlugExist = await productSchema.findOne({
       slug: slug.toLowerCase(),
     });
-    if (isSlugExist)
+    if (isSlugExist)   
       return sendResponse(res, 400, "this slug is already exist");
     if (!category) return sendResponse(res, 400, "category is required");
     const isCategoryExist = await categorySchema.findById(category);
     if (!isCategoryExist) return sendResponse(res, 400, "invalid category");
     if (!price) return sendResponse(res, 400, "price is required");
+    // .....variansts part  start........//
+    // .apadotor jonno //
+    const varinatsData = JSON.parse(variants);
     if (!Array.isArray(varinatsData) || varinatsData.length == 0)
       return sendResponse(res, 400, "minimum 1 variansts is required");
     for (const variant of varinatsData) {
       if (!variant.sku) return sendResponse(res, 400, "sku is required ");
       if (!variant.color) return sendResponse(res, 400, "color is required ");
-      if (!variant.sizes) return sendResponse(res, 400, "sizes is required ");
+      if (!variant.sizes) return sendResponse(res, 400, "size is required ");
       if (!SIZE_ENUM.includes(variant.sizes))
         return sendResponse(res, 400, "invalid size");
       if (!variant.stock || variant.stock < 1)
@@ -53,11 +53,13 @@ const createproduct = async (req, res) => {
     if (new Set(skus).size !== skus.length) {
       return sendResponse(res, 400, "sku must be unique");
     }
+    // ........veriants part end here ...........//
     if (!thumbnail || thumbnail?.length === 0)
       return sendResponse(res, 400, "thumbnail is required");
+    const thumbnailimg = await UploadTcloudinery(thumbnail[0], "product");
     if (images && images?.length > 4)
       return sendResponse(res, 400, "you cant't upload images max 4");
-    const thumbnailimg = await UploadTcloudinery(thumbnail[0], "product");
+
     let imgurl = await Promise.all(
       images.map(async (image) => {
         const imagesUrl = await UploadTcloudinery(image, "product");
@@ -114,13 +116,7 @@ const getproductLis = async (req, res) => {
       },
       { $unwind: "$category" },
 
-      ...(category
-        ? [
-            {
-              $match: { "category.slug": category },
-            },
-          ]
-        : []),
+      ...(category? [{$match: { "category.slug": category },},]: []),
 
       { $sort: { createdAt: -1 } },
       { $skip: skip },
@@ -158,7 +154,6 @@ const getproductLis = async (req, res) => {
     //   .limit(limit)
     //   .sort({ createdAt: -1 });
     // console.log(productList);
-
     const totllpages = Math.ceil(totallproducts / limit);
     sendResponse(res, 200, "", true, {
       prodcuts: productList,
@@ -172,7 +167,6 @@ const getproductLis = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
     sendResponse(res, 500, "Interlnal server error");
   }
 };
@@ -206,7 +200,7 @@ const updateroduct = async (req, res) => {
     const { slug } = req.params;
     const thumbnail = req.files?.thumbnail;
     const images = req.files?.images;
-    const productdata = await productSchema.findOne({ slug });
+    const productdata = await productSchema.findOne({ slug });    
     if (title) productdata.title = title;
     if (description) productdata.description = description;
     if (category) productdata.category = category;
@@ -215,15 +209,20 @@ const updateroduct = async (req, res) => {
     if (tags?.length > 0 && Array.isArray(tags)) productdata.tages = tags;
     if (isActive) productdata.isActive = isActive = "true";
     // .........apadoto parse....** varints part.....//
-    // const varinatsData = JSON.parse(variants);//
+    const varinatsData = JSON.parse(variants); //
     if (varinatsData?.length > 0 && Array.isArray(varinatsData)) {
       for (const variant of varinatsData) {
-        if (!variant.sku) sendResponse(res, 400, "sku is required");
-        if (!variant.color) sendResponse(res, 400, "color is required");
+        if (!variant.sku) return sendResponse(res, 400, "sku is required");
+        if (!variant.color) return sendResponse(res, 400, "color is required");
+        if (!variant.sizes) return sendResponse(res, 400, "size is required");
         if (!variant.SIZE_ENUM.includes(size))
-          sendResponse(res, 400, "invalid size");
+          return sendResponse(res, 400, "invalid size");
         if (!variant.stock || variant.stock < 1)
-          sendResponse(res, 400, "stock is required and must be more then 0");
+          return sendResponse(
+            res,
+            400,
+            "stock is required and must be more then 0",
+          );
       }
     }
     // .......thumbnail img cloudinery part .......//
@@ -232,11 +231,10 @@ const updateroduct = async (req, res) => {
       DeletfromCloudinary(`product${imagPublId}`);
       const imgres = await UploadTcloudinery(thumbnail, "product");
       productdata.thumbnail = imgres.secure_url;
-    };
+    }
     // .......productnimg clouddiner update part .......//
-  
   } catch (error) {
-    console.log(error)
+    console.log(error);
     sendResponse(res, 500, "Internal server error");
   }
 };

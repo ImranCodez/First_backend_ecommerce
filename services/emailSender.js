@@ -8,7 +8,6 @@ const transporter = nodemailer.createTransport({
     pass: "nfavstokanechgpt",
   },
 });
-
 const sendEmail = async ({ email, subject, otp, template }) => {
   await transporter.sendMail({
     from: `"E-commerce"`,
