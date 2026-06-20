@@ -14,7 +14,10 @@ const {
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
-const { UploadTcloudinery, DeletfromCloudinary } = require("../services/cloudinerservice");
+const {
+  UploadTcloudinery,
+  DeletfromCloudinary,
+} = require("../services/cloudinerservice");
 // ...........signup part...//
 const signupuser = async (req, res) => {
   try {
@@ -90,7 +93,7 @@ const singinuser = async (req, res) => {
 
     sendResponse(res, 200, "Login is succesfull", true);
   } catch (error) {
-     sendResponse(res,400,"Internal server error ")
+    sendResponse(res, 400, "Internal server error ");
   }
 };
 // .......otp verify......//
@@ -128,9 +131,7 @@ const verifyOtp = async (req, res) => {
       isVerified: true,
     });
   } catch (error) {
-     sendResponse(res,500,"Internal server error")
-    console.error(error);
-  
+    sendResponse(res, 500, "Internal server error");
   }
 };
 // ........regenerate........//
@@ -158,14 +159,7 @@ const regenerateOtp = async (req, res) => {
       otp: generateOTP,
     });
 
-    sendResponse(
-      res,
-      201,
-      "OTP sent successfully",
-      true,
-      generateOTP
-    );
-
+    sendResponse(res, 201, "OTP sent successfully", true, generateOTP);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
   }
