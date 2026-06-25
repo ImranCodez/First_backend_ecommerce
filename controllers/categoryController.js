@@ -1,11 +1,11 @@
 const categorySchema = require("../models/categorySchema");
 const { UploadTcloudinery } = require("../services/cloudinerservice");
 const sendResponse = require("../services/responsiveHandler");
+
 const CreateNewcategory = async (req, res) => {
   try {
     const { name, description,slug } = req.body;
     const thumbnail = req.file;
-
     if (!name) sendResponse(res, 400, "name is required");
     if (!slug) sendResponse(res, 400, "slug is required");
     if (!thumbnail) sendResponse(res, 400, " thumnail is required");
@@ -26,7 +26,7 @@ const CreateNewcategory = async (req, res) => {
     console.log(error);
   }
 };
-// .......ger alll category ....//
+// .......get all category ....//
 const getallcategories = async (req, res) => {
   try {
     const categories = await categorySchema.find({});

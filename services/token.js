@@ -16,7 +16,7 @@ const generateAccsToken = (user) => {
 };
 const generateRefToken = (user) => {
   return jwt.sign(
-    {
+    { 
       user: user._id,
       email: user.email,
       role: user.role,
