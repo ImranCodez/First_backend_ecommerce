@@ -91,6 +91,7 @@ const createproduct = async (req, res) => {
     createproduct.save();
     return sendResponse(res, 201, "product created sucessfull", true);
   } catch (error) {
+    console.log(error)
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -206,6 +207,9 @@ const updateroduct = async (req, res) => {
     if (category) productdata.category = category;
     if (discountpercentage) productdata.discountpercentage = discountpercentage;
     if (price) productdata.price = price;
+
+
+
     if (tags?.length > 0 && Array.isArray(tags)) productdata.tages = tags;
     if (isActive) productdata.isActive = isActive = "true";
     // .........apadoto parse....** varints part.....//

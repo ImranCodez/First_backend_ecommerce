@@ -49,7 +49,8 @@ const signupuser = async (req, res) => {
     user.save();
     sendResponse(res, 201, "signup is successfull");
   } catch (error) {
-    sendResponse(res, 500, "Internal server error");
+   
+    sendResponse(res, 500, false,"Internal server error");
   }
 };
 // ..signin part .....//
@@ -59,7 +60,7 @@ const singinuser = async (req, res) => {
     if (!email) return sendResponse(res,400,"email is required");
     if (!password)return sendResponse(res,400,"password is required")
     const existingUser = await User.findOne({ email });
-    if (!existingUser)return send(res,400,"with this email user not exist");
+    if (!existingUser)return sendResponse(res,400,"with this email user not exist");
     const matchpass = await existingUser.comparePassword(password);
     if (!matchpass) return sendResponse(res,400,"wrong password");
     if (!existingUser.isVerified)
@@ -84,7 +85,14 @@ const singinuser = async (req, res) => {
 
     sendResponse(res, 200, "Login is succesfull", true);
   } catch (error) {
-     sendResponse(res,400,"Internal server error ")
+     console.log(error)
+    sendResponse(
+  res,
+  500,
+  "Internal server error",
+  false,
+  error.message
+);
   }
 };
 // .......otp verify......//
