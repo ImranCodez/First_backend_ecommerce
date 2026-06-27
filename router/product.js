@@ -5,7 +5,7 @@ const { authMiddleware } = require("../middleware/aurthMiddleware");
 const rolecheckmiddleware = require("../middleware/rolecheckmiddleware");
 const route = express.Router();
 const upload=multer();
-route.post("/create",authMiddleware,rolecheckmiddleware("user"),upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]), createproduct);
+route.post("/create",authMiddleware,rolecheckmiddleware("user","admin"),upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]),createproduct);
 route.get("/getproduct",getproductLis);
 route.get("/prodcutdetails",singleproductsdeatils);
 route.put("/update",authMiddleware,rolecheckmiddleware("admin"),upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]),updateroduct);

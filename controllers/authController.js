@@ -14,7 +14,10 @@ const {
   emailvarifyTemplate,
 } = require("../services/emailverifyTemplate");
 const generateotp = require("../services/helpers");
-const { UploadTcloudinery, DeletfromCloudinary } = require("../services/cloudinerservice");
+const {
+  UploadTcloudinery,
+  DeletfromCloudinary,
+} = require("../services/cloudinerservice");
 // ...........signup part...//
 const signupuser = async (req, res) => {
   try {
@@ -42,27 +45,27 @@ const signupuser = async (req, res) => {
     });
     sendEmail({
       email,
-      subject:"Email varification",
+      subject: "Email varification",
       template: emailvarifyTemplate,
       otp: generateOTP,
     });
     user.save();
     sendResponse(res, 201, "signup is successfull");
   } catch (error) {
-   
-    sendResponse(res, 500, false,"Internal server error");
+    sendResponse(res, 500, false, "Internal server error");
   }
 };
 // ..signin part .....//
 const singinuser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email) return sendResponse(res,400,"email is required");
-    if (!password)return sendResponse(res,400,"password is required")
+    if (!email) return sendResponse(res, 400, "email is required");
+    if (!password) return sendResponse(res, 400, "password is required");
     const existingUser = await User.findOne({ email });
-    if (!existingUser)return sendResponse(res,400,"with this email user not exist");
+    if (!existingUser)
+      return sendResponse(res, 400, "with this email user not exist");
     const matchpass = await existingUser.comparePassword(password);
-    if (!matchpass) return sendResponse(res,400,"wrong password");
+    if (!matchpass) return sendResponse(res, 400, "wrong password");
     if (!existingUser.isVerified)
       return sendResponse(res, 400, "Email is not verified");
     const token = generateAccsToken(existingUser);
@@ -85,14 +88,8 @@ const singinuser = async (req, res) => {
 
     sendResponse(res, 200, "Login is succesfull", true);
   } catch (error) {
-     console.log(error)
-    sendResponse(
-  res,
-  500,
-  "Internal server error",
-  false,
-  error.message
-);
+    console.log(error);
+    sendResponse(res, 500, "Internal server error", false, error.message);
   }
 };
 // .......otp verify......//
@@ -105,16 +102,18 @@ const verifyOtp = async (req, res) => {
 
     // 2️⃣ Find user
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).send("User not found");
-
+    if (!user) return res.status(404).send("User not found chgfh");
+    console.log(user);
+    console.log(otp);
     // 3️⃣ Check OTP match
     if (user.otp !== otp) {
-      return res.status(400).send("Invalid OTP");
+      return res.status(400).send("Invalid OTP dfef");
     }
     // 4️⃣ Check OTP expiry
     if (user.otpExpires < Date.now()) {
       return res.status(400).send("OTP expired");
     }
+    req.user
     // 5️⃣ Update user (verify)
     user.isVerified = true;
     user.otp = null;
@@ -128,8 +127,7 @@ const verifyOtp = async (req, res) => {
       isVerified: true,
     });
   } catch (error) {
-     sendResponse(res,500,"Internal server error")
-  
+    sendResponse(res, 500, "Internal server error");
   }
 };
 // ........regenerate........//
@@ -157,14 +155,7 @@ const regenerateOtp = async (req, res) => {
       otp: generateOTP,
     });
 
-    sendResponse(
-      res,
-      201,
-      "OTP sent successfully",
-      true,
-      generateOTP
-    );
-
+    sendResponse(res, 201, "OTP sent successfully", true, generateOTP);
   } catch (error) {
     sendResponse(res, 500, "Internal server error");
   }

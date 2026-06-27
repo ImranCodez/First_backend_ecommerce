@@ -29,7 +29,7 @@ const createproduct = async (req, res) => {
     const isSlugExist = await productSchema.findOne({
       slug: slug.toLowerCase(),
     });
-    if (isSlugExist)   
+    if (isSlugExist)
       return sendResponse(res, 400, "this slug is already exist");
     if (!category) return sendResponse(res, 400, "category is required");
     const isCategoryExist = await categorySchema.findById(category);
@@ -59,7 +59,6 @@ const createproduct = async (req, res) => {
     const thumbnailimg = await UploadTcloudinery(thumbnail[0], "product");
     if (images && images?.length > 4)
       return sendResponse(res, 400, "you cant't upload images max 4");
-
     let imgurl = await Promise.all(
       images.map(async (image) => {
         const imagesUrl = await UploadTcloudinery(image, "product");
@@ -91,7 +90,7 @@ const createproduct = async (req, res) => {
     createproduct.save();
     return sendResponse(res, 201, "product created sucessfull", true);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -117,7 +116,7 @@ const getproductLis = async (req, res) => {
       },
       { $unwind: "$category" },
 
-      ...(category? [{$match: { "category.slug": category },},]: []),
+      ...(category ? [{ $match: { "category.slug": category } }] : []),
 
       { $sort: { createdAt: -1 } },
       { $skip: skip },
@@ -194,6 +193,7 @@ const updateroduct = async (req, res) => {
       category,
       price,
       discountpercentage,
+      destroyImage,
       tags,
       variants,
       isActive,
@@ -201,14 +201,12 @@ const updateroduct = async (req, res) => {
     const { slug } = req.params;
     const thumbnail = req.files?.thumbnail;
     const images = req.files?.images;
-    const productdata = await productSchema.findOne({ slug });    
+    const productdata = await productSchema.findOne({ slug });
     if (title) productdata.title = title;
     if (description) productdata.description = description;
     if (category) productdata.category = category;
     if (discountpercentage) productdata.discountpercentage = discountpercentage;
     if (price) productdata.price = price;
-
-
 
     if (tags?.length > 0 && Array.isArray(tags)) productdata.tages = tags;
     if (isActive) productdata.isActive = isActive = "true";
@@ -236,6 +234,31 @@ const updateroduct = async (req, res) => {
       const imgres = await UploadTcloudinery(thumbnail, "product");
       productdata.thumbnail = imgres.secure_url;
     }
+    // ......iamge update incoudinery part ..//
+    let imgurl = [];
+    if (images && images?.length > 4)
+      return sendResponse(res, 400, "you cant't upload images max 4");
+    imgurl = await Promise.all(
+      images.map(async (image) => {
+        const imagesUrl = await UploadTcloudinery(image, "product");
+        return imagesUrl.secure_url;
+      }),
+    );
+
+    if (Array.isArray(destroyImage) && destroyImage.length > 0) {
+      for (const Url of destroyImage) {
+        const imagPublId = Url.split("/").pop().split(".")[0];
+        DeletfromCloudinary(`product${imagPublId}`);
+      }
+
+      let FilterImage = productdata.images.filter((items) => {
+        return !destroyImage.includes(items);
+      });
+    }
+    imgurl.concat(FilterImage);
+    if (imgurl.length > 0) productdata.images = imgurl;
+
+    productdata.svae();
     // .......productnimg clouddiner update part .......//
   } catch (error) {
     console.log(error);
