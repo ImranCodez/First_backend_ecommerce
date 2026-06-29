@@ -21,6 +21,15 @@ const createproduct = async (req, res) => {
       variants,
       isActive,
     } = req.body;
+    console.log(
+      title,
+      description,
+      slug,
+      category,
+      price,
+      discountpercentage,
+      tags,
+    );
     const thumbnail = req.files?.thumbnail;
     const images = req.files?.images;
     if (!title) return sendResponse(res, 400, "title is required");
@@ -236,6 +245,10 @@ const updateroduct = async (req, res) => {
     }
     // ......iamge update incoudinery part ..//
     let imgurl = [];
+    let totallimage = productdata.images.length;
+    if (destroyImage.length > 0) totallimage -= destroyImage;
+    if (Array.isArray(images) && images.length > 0)
+      totallimage += images.length;
     if (images && images?.length > 4)
       return sendResponse(res, 400, "you cant't upload images max 4");
     imgurl = await Promise.all(
@@ -250,13 +263,14 @@ const updateroduct = async (req, res) => {
         const imagPublId = Url.split("/").pop().split(".")[0];
         DeletfromCloudinary(`product${imagPublId}`);
       }
-
+      if(totallimage>4) return sendResponse(res,400," you can upload maxium 4 images");
+      if(totallimage>1) return sendResponse(res,400," minimum 1 image should be stay");
       let FilterImage = productdata.images.filter((items) => {
         return !destroyImage.includes(items);
       });
     }
-    imgurl.concat(FilterImage);
-    if (imgurl.length > 0) productdata.images = imgurl;
+    let allimges = imgurl.concat(FilterImage);
+    if (imgurl.length > 0) productdata.images = allimges;
 
     productdata.svae();
     // .......productnimg clouddiner update part .......//
