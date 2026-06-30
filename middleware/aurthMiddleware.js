@@ -3,14 +3,14 @@ const { verifyToken } = require("../services/token");
 const authMiddleware = (req, res, next) => {
   try {
     const token = req.cookies.accessToken;
-    if (!token) return sendResponse(res, 400, "Invalid1111111111111 request");
+    if (!token) return sendResponse(res, 400, "Invalid request");
     const decoded = verifyToken(token);
-    if (!decoded) return sendResponse(res, 400, "Invalid 2222222222 request");
+    if (!decoded) return sendResponse(res, 400, "Invalid request");
     req.user = decoded;
     console.log(decoded)
     next();
   } catch (error) {
-   sendResponse(res, 400, "Invalid 333333333 request");
+   sendResponse(res, 400, "Invalid  request");
     console.log(error);
   }
 };
