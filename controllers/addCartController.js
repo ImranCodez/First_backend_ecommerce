@@ -30,16 +30,16 @@ const addToCart = async (req, res) => {
     }
 
     // Discount Price
-    const discountAmount =
-      (product.price * product.discountpercentage) / 100;
+    const discountAmount = (product.price * product.discountpercentage) / 100;
 
-    const finalPrice = product.price - discountAmount;
+    const finalprice = product.price - discountAmount;
+    let subtotal = finalprice * quantity;
 
     // Find Cart
     let cart = await cartSchema.findOne({
       user: req.user.id,
     });
-
+    console.log(cart);
     // Create Cart if not exists
     if (!cart) {
       cart = new cartSchema({
@@ -49,19 +49,12 @@ const addToCart = async (req, res) => {
     }
 
     // Check Existing Item
-    const existingItem = cart.items.find(
-      (item) => item.sku === sku
-    );
+    const existingItem = cart.items.find((item) => item.sku === sku);
 
     if (existingItem) {
       // Quantity Update
       if (existingItem.quantity + quantity > variant.stock) {
-        return sendResponse(
-          res,
-          400,
-          false,
-          "Stock limit exceeded"
-        );
+        return sendResponse(res, 400, false, "Stock limit exceeded");
       }
 
       existingItem.quantity += quantity;
@@ -70,27 +63,16 @@ const addToCart = async (req, res) => {
         product: product._id,
         sku,
         quantity,
-        price: finalPrice,
+        price: subtotal,
       });
     }
 
     await cart.save();
 
-    return sendResponse(
-      res,
-      201,
-      true,
-      "Product added to cart",
-      cart
-    );
+    return sendResponse(res, 201, true, "Product added to cart", cart);
   } catch (error) {
     console.log(error);
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Internal server error"
-    );
+    return sendResponse(res, 500, false, "Internal server error");
   }
 };
 
