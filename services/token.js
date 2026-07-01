@@ -45,7 +45,6 @@ const hashverifytoken = (token) => {
 const verifyToken = (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("verfdsecoded", decoded);
     return decoded;
   } catch (error) {
     console.log("JWT Error:", error.message);

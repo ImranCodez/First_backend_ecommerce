@@ -42,7 +42,7 @@ const productSchema = mongoose.Schema(
         sku: {
           type: String,
           required: true,
-          inique: true,
+          unique: true,
         },
         color: {
           type: String,
@@ -69,7 +69,7 @@ const productSchema = mongoose.Schema(
       default: false,
     },
   },
-  { Timestamp: true },
+  { Timestamps: true },
 );
 // productSchema.index({ slug: 1 });//
 
