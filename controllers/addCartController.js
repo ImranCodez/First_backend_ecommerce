@@ -2,7 +2,7 @@ const cartSchema = require("../models/cartSchema");
 const productSchema = require("../models/productSchema");
 const isvalid = require("../services/isvalidId");
 const sendResponse = require("../services/responsiveHandler");
-
+// .......create cart..//
 const addToCart = async (req, res) => {
   try {
     const { productId, sku, quantity } = req.body;
@@ -86,6 +86,7 @@ const getAlCart = async (req, res) => {
     sendResponse(res, 400, "Internal server error");
   }
 };
+// updated cart ..//
 const updatecart = async (req, res) => {
   try {
     const { itemId, quantity, productId } = req.body;
@@ -114,4 +115,26 @@ const updatecart = async (req, res) => {
     sendResponse(res, 500, "Internal server error");
   }
 };
-module.exports = { addToCart, getAlCart, updatecart };
+const removecart = async (req, res) => {
+  try {
+    const { itemId } = req.body;
+    if (!itemId)
+      return sendResponse(res, 400, "Invalid error");
+    if (!isvalid([itemId]))
+      return sendResponse(res, 400, "Invalid request");
+    const cart = await cartSchema
+      .findOneAndDelete(
+        { user: req.user.id, "items._id": itemId },
+        // {
+        //   $set: { "items.$.quantity": quantity, "items.$.subtotal": subtotal },
+        // },
+        { new: true },
+      )
+      .select("items totalItems");
+    return sendResponse(res, 200, "cart delete successfully", cart);
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Internal server error");
+  }
+};
+module.exports = { addToCart, getAlCart, updatecart,removecart };

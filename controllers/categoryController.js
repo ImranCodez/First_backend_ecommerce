@@ -1,7 +1,6 @@
 const categorySchema = require("../models/categorySchema");
 const { UploadTcloudinery } = require("../services/cloudinerservice");
 const sendResponse = require("../services/responsiveHandler");
-
 const CreateNewcategory = async (req, res) => {
   try {
     const { name, description,slug } = req.body;
