@@ -1,5 +1,6 @@
 const cartSchema = require("../models/cartSchema");
 const productSchema = require("../models/productSchema");
+const isvalid = require("../services/isvalidId");
 const sendResponse = require("../services/responsiveHandler");
 
 const addToCart = async (req, res) => {
@@ -75,5 +76,42 @@ const addToCart = async (req, res) => {
     return sendResponse(res, 500, false, "Internal server error");
   }
 };
-
-module.exports = addToCart;
+// .......getcart part ....//
+const getAlCart = async (req, res) => {
+  try {
+    const cartdata = await cartSchema.findOne({ user: req.user.id });
+    sendResponse(res, 200, cartdata);
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 400, "Internal server error");
+  }
+};
+const updatecart = async (req, res) => {
+  try {
+    const { itemId, quantity, productId } = req.body;
+    if (!itemId || !quantity || !productId)
+      return sendResponse(res, 400, "Invalid error");
+    if (!isvalid([itemId, productId]))
+      return sendResponse(res, 400, "Invalid request");
+    if (quantity < 1) return sendResponse(res, 400, "keep the item minimum 1");
+    const product = await productSchema.findById(productId);
+    const discountAmount = (product.price * product.discountpercentage) / 100;
+    const finalprice = product.price - discountAmount;
+    let subtotal = finalprice * quantity;
+    console.log("totall", subtotal);
+    const cart = await cartSchema
+      .findOneAndUpdate(
+        { user: req.user.id, "items._id": itemId },
+        {
+          $set: { "items.$.quantity": quantity, "items.$.subtotal": subtotal },
+        },
+        { new: true },
+      )
+      .select("items totalItems");
+    return sendResponse(res, 200, "cart updated sucessfully", cart);
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Internal server error");
+  }
+};
+module.exports = { addToCart, getAlCart, updatecart };
