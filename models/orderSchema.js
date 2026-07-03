@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
-const orderItemSchema = new mongoose.Schema({
+const orderItems = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
+    ref: "product",
     required: true,
   },
   sku: {
@@ -13,12 +13,8 @@ const orderItemSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: true,
-    default: 1,
     min: 1,
-  },
-  price: {
-    type: Number,
-    required: true,
+    default: 1,
   },
   subtotal: {
     type: Number,
@@ -26,34 +22,57 @@ const orderItemSchema = new mongoose.Schema({
   },
 });
 
+const paymentSchema = new mongoose.Schema({
+  method: {
+    type: String,
+    enum: ["Stripe", "cash"],
+  },
+  paymentId: String,
+  status: {
+    type: String,
+    enum: ["pending", "paid", "failed"],
+    default: "pending",
+  },
+  paidAt: Date,
+});
+
 const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
-      unique: true,
     },
-
-    items: [orderItemSchema],
-
-    totalItems: {
+    items: [orderItems],
+    shippingAddress: {
+      type: String,
+      required: true,
+    },
+    insideDhaka: {
+      type: Boolean,
+      required: true,
+    },
+    deliveryCharge: {
       type: Number,
       default: 0,
     },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
+    payment: paymentSchema,
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
+    orderNumber: {
+      type: String,
+      unique: true,
+    },
+    deliveredAt: Date,
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true }
 );
 
-// .....Automatically calculate totals...//
-orderSchema.pre("save", function () {
-  this.totalItems = this.items.reduce(
-    (total, item) => total + item.quantity,
-    0,
-  );
-
-});
-
-module.exports = mongoose.model("Cart", orderSchema);
+module.exports = mongoose.model("Order", orderSchema);

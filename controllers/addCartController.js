@@ -115,26 +115,23 @@ const updatecart = async (req, res) => {
     sendResponse(res, 500, "Internal server error");
   }
 };
-const removecart = async (req, res) => {
+const removeFromCart = async (req, res) => {
   try {
     const { itemId } = req.body;
-    if (!itemId)
-      return sendResponse(res, 400, "Invalid error");
-    if (!isvalid([itemId]))
-      return sendResponse(res, 400, "Invalid request");
+    if (!isValidId([itemId]))
+      return responseHandler.error(res, 400, "Invalid Request");
+    if (!itemId) return responseHandler.error(res, 400, "Invalid Request");
     const cart = await cartSchema
-      .findOneAndDelete(
-        { user: req.user.id, "items._id": itemId },
-        // {
-        //   $set: { "items.$.quantity": quantity, "items.$.subtotal": subtotal },
-        // },
+      .findOneAndUpdate(
+        { user: req.user._id, "items._id": itemId },
+        { $pull: { items: { _id: itemId } } },
         { new: true },
       )
       .select("items totalItems");
-    return sendResponse(res, 200, "cart delete successfully", cart);
+    responseHandler.success(res, 200, cart, "Cart Updated");
   } catch (error) {
     console.log(error);
-    sendResponse(res, 500, "Internal server error");
-  }
+    responseHandler.error(res, 500, "Server Error");
+  } 
 };
-module.exports = { addToCart, getAlCart, updatecart,removecart };
+module.exports = { addToCart, getAlCart, updatecart, removeFromCart };
