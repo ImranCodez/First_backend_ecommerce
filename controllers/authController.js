@@ -74,7 +74,6 @@ const singinuser = async (req, res) => {
       httpOnly: false, // Prevents client-side JavaScript from accessing the cookie, mitigating XSS
       maxAge: 1000 * 60 * 40, // Cookie expiry time in milliseconds (e.g., 15 minutes)
       secure: false, // Ensures the cookie is only sent over HTTPS (set to false for local HTTP development)
-      // sameSite: 'Strict', // Mitigates CSRF attacks by ensuring cookies are only sent for same-site requests
     };
     const cookieRFcsOptions = {
       httpOnly: false,
