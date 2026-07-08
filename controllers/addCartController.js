@@ -6,7 +6,6 @@ const sendResponse = require("../services/responsiveHandler");
 const addToCart = async (req, res) => {
   try {
     const { productId, sku, quantity } = req.body;
-
     if (!productId || !sku || !quantity) {
       return sendResponse(res, 400, false, "All fields are required");
     }
@@ -20,7 +19,7 @@ const addToCart = async (req, res) => {
 
     // Find Variant
     const variant = product.variants.find((item) => item.sku === sku);
-
+    console.log(variant);
     if (!variant) {
       return sendResponse(res, 404, false, "Invalid SKU");
     }
@@ -32,7 +31,6 @@ const addToCart = async (req, res) => {
 
     // Discount Price
     const discountAmount = (product.price * product.discountpercentage) / 100;
-
     const finalprice = product.price - discountAmount;
     let subtotal = finalprice * quantity;
 
@@ -48,28 +46,24 @@ const addToCart = async (req, res) => {
         items: [],
       });
     }
-
     // Check Existing Item
     const existingItem = cart.items.find((item) => item.sku === sku);
 
     if (existingItem) {
-      // Quantity Update
+      // Quantity Update       if items exist.....//
       if (existingItem.quantity + quantity > variant.stock) {
         return sendResponse(res, 400, false, "Stock limit exceeded");
       }
-
       existingItem.quantity += quantity;
     } else {
       cart.items.push({
         product: product._id,
         sku,
         quantity,
-        price: subtotal,
+        subtotal,
       });
     }
-
     await cart.save();
-
     return sendResponse(res, 201, true, "Product added to cart", cart);
   } catch (error) {
     console.log(error);
@@ -80,7 +74,8 @@ const addToCart = async (req, res) => {
 const getAlCart = async (req, res) => {
   try {
     const cartdata = await cartSchema.findOne({ user: req.user.id });
-    sendResponse(res, 200, cartdata);
+    console.log(cartdata);
+    sendResponse(res, 200, " get all cart data success", cartdata);
   } catch (error) {
     console.log(error);
     sendResponse(res, 400, "Internal server error");
@@ -99,7 +94,7 @@ const updatecart = async (req, res) => {
     const discountAmount = (product.price * product.discountpercentage) / 100;
     const finalprice = product.price - discountAmount;
     let subtotal = finalprice * quantity;
-    console.log("totall", subtotal);
+    console.log("itemId", req.user.id);
     const cart = await cartSchema
       .findOneAndUpdate(
         { user: req.user.id, "items._id": itemId },
@@ -109,6 +104,7 @@ const updatecart = async (req, res) => {
         { new: true },
       )
       .select("items totalItems");
+    console.log(cart);
     return sendResponse(res, 200, "cart updated sucessfully", cart);
   } catch (error) {
     console.log(error);
@@ -132,6 +128,6 @@ const removeFromCart = async (req, res) => {
   } catch (error) {
     console.log(error);
     responseHandler.error(res, 500, "Server Error");
-  } 
+  }
 };
 module.exports = { addToCart, getAlCart, updatecart, removeFromCart };
