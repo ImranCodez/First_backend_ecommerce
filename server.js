@@ -12,7 +12,8 @@ app.use(cors());
 dbconfig();
 clodinaryConfig()
 app.use(route);
-
+const dns = require('node:dns/promises');
+dns.setServers(["1.1.1.1", "8.8.8.8"]); 
 app.listen(8000, () => {
   console.log("server is runing");
 });
