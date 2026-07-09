@@ -85,6 +85,8 @@ const getAlCart = async (req, res) => {
 const updatecart = async (req, res) => {
   try {
     const { itemId, quantity, productId } = req.body;
+    console.log(itemId,   productId);
+    
     if (!itemId || !quantity || !productId)
       return sendResponse(res, 400, "Invalid error");
     if (!isvalid([itemId, productId]))
@@ -94,7 +96,6 @@ const updatecart = async (req, res) => {
     const discountAmount = (product.price * product.discountpercentage) / 100;
     const finalprice = product.price - discountAmount;
     let subtotal = finalprice * quantity;
-    console.log("itemId", req.user.id);
     const cart = await cartSchema
       .findOneAndUpdate(
         { user: req.user.id, "items._id": itemId },
@@ -104,7 +105,7 @@ const updatecart = async (req, res) => {
         { new: true },
       )
       .select("items totalItems");
-    console.log(cart);
+    console.log("updte controller",cart);
     return sendResponse(res, 200, "cart updated sucessfully", cart);
   } catch (error) {
     console.log(error);
