@@ -109,6 +109,7 @@ const getproductLis = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const category = req.query.category;
+    const search = req.query.search;
     const skip = (page - 1) * limit;
     const totallproducts = await productSchema.countDocuments();
     const pipeline = [
@@ -146,6 +147,14 @@ const getproductLis = async (req, res) => {
         },
       },
     ];
+    if (search) {
+      pipeline.push({
+        $match: {
+          // Searches for 'phone' case-insensitively anywhere in the name
+          title: { $regex: "search", $options: "i" },
+        },
+      });
+    }
     // if (category) {
     //   pipeline.push({
     //     $match: {
@@ -263,8 +272,10 @@ const updateroduct = async (req, res) => {
         const imagPublId = Url.split("/").pop().split(".")[0];
         DeletfromCloudinary(`product${imagPublId}`);
       }
-      if(totallimage>4) return sendResponse(res,400," you can upload maxium 4 images");
-      if(totallimage>1) return sendResponse(res,400," minimum 1 image should be stay");
+      if (totallimage > 4)
+        return sendResponse(res, 400, " you can upload maxium 4 images");
+      if (totallimage > 1)
+        return sendResponse(res, 400, " minimum 1 image should be stay");
       let FilterImage = productdata.images.filter((items) => {
         return !destroyImage.includes(items);
       });
