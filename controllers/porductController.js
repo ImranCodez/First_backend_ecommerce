@@ -200,7 +200,6 @@ const singleproductsdeatils = async (req, res) => {
     sendResponse(res, 200, "", true, productdata);
   } catch (error) {
     sendResponse(res, 500, "internal server error");
-    console.log(error);
   }
 };
 const updateroduct = async (req, res) => {
@@ -286,7 +285,6 @@ const updateroduct = async (req, res) => {
     productdata.svae();
     // .......productnimg clouddiner update part .......//
   } catch (error) {
-    console.log(error);
     sendResponse(res, 500, "Internal server error");
   }
 };
